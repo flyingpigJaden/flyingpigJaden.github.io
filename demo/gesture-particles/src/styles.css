@@ -1,0 +1,167 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #07090f;
+  color: #f4f7fb;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+.app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+#scene {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.hud {
+  position: fixed;
+  z-index: 10;
+  top: 18px;
+  left: 18px;
+  width: min(340px, calc(100vw - 36px));
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  background: rgba(8, 12, 20, 0.72);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
+}
+
+.portfolio-link {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: #e9b949;
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.portfolio-link:hover {
+  text-decoration: underline;
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 22px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 10px;
+  border-radius: 50%;
+  background: #e9b949;
+  box-shadow: 0 0 14px rgba(233, 185, 73, 0.7);
+}
+
+.status-dot.ready {
+  background: #37d67a;
+  box-shadow: 0 0 14px rgba(55, 214, 122, 0.7);
+}
+
+.status-dot.error {
+  background: #ff5d5d;
+  box-shadow: 0 0 14px rgba(255, 93, 93, 0.7);
+}
+
+.camera-button {
+  width: 100%;
+  height: 36px;
+  margin-top: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 8px;
+  background: #f4f7fb;
+  color: #08101d;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.camera-button:hover {
+  background: #dfe8f5;
+}
+
+.camera-button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.camera-button.is-ready {
+  background: rgba(55, 214, 122, 0.16);
+  color: #dfffea;
+  cursor: default;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 8px 10px;
+  margin-top: 12px;
+  align-items: center;
+  color: rgba(244, 247, 251, 0.72);
+  font-size: 12px;
+}
+
+meter {
+  width: 100%;
+  height: 8px;
+}
+
+.camera-panel {
+  position: fixed;
+  z-index: 8;
+  right: 18px;
+  bottom: 18px;
+  width: min(260px, calc(100vw - 36px));
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  background: rgba(8, 12, 20, 0.78);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.32);
+}
+
+#camera,
+#debug-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+@media (max-width: 720px) {
+  .hud {
+    top: 12px;
+    left: 12px;
+    width: calc(100vw - 24px);
+  }
+
+  .camera-panel {
+    right: 12px;
+    bottom: 12px;
+    width: 160px;
+  }
+}

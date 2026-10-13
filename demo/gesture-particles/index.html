@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>手势粒子交互原型</title>
+    <meta name="description" content="Jaden 的手势控制星空演示。允许摄像头后，用手掌移动、张开和捏合来控制粒子。" />
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <canvas id="scene"></canvas>
+
+      <section class="hud" aria-label="状态面板">
+        <a class="portfolio-link" href="/">← 返回 Jaden 的作品集</a>
+        <div class="status-row">
+          <span id="status-dot" class="status-dot"></span>
+          <span id="status-text">粒子已启动，点击开启摄像头</span>
+        </div>
+        <button id="start-camera" class="camera-button" type="button">开启摄像头</button>
+        <div class="metrics">
+          <span>移动</span>
+          <meter id="move-meter" min="0" max="1" value="0"></meter>
+          <span>张合</span>
+          <meter id="spread-meter" min="0" max="1" value="0"></meter>
+        </div>
+      </section>
+
+      <aside class="camera-panel" aria-label="摄像头预览">
+        <video id="camera" autoplay playsinline muted></video>
+        <canvas id="debug-canvas"></canvas>
+      </aside>
+    </main>
+
+    <script>
+      window.__inlineCameraFallbackReady = true;
+
+      window.addEventListener("DOMContentLoaded", () => {
+        const button = document.querySelector("#start-camera");
+        const statusText = document.querySelector("#status-text");
+        const statusDot = document.querySelector("#status-dot");
+        const video = document.querySelector("#camera");
+
+        if (!button || !statusText || !video) return;
+
+        button.addEventListener("click", async () => {
+          if (window.__gestureParticleAppReady) return;
+
+          button.disabled = true;
+          button.textContent = "正在请求权限...";
+          statusText.textContent = "兜底模式：正在请求摄像头权限...";
+
+          try {
+            if (!navigator.mediaDevices?.getUserMedia) {
+              throw new Error("这个浏览器不支持摄像头访问，请换 Chrome 或 Edge");
+            }
+
+            const stream = await navigator.mediaDevices.getUserMedia({
+              video: true,
+              audio: false,
+            });
+
+            video.srcObject = stream;
+            await video.play();
+            button.textContent = "摄像头已开启";
+            statusText.textContent = "摄像头已打开，主程序还没有运行";
+            statusDot.className = "status-dot ready";
+          } catch (error) {
+            button.disabled = false;
+            button.textContent = "重新开启摄像头";
+            statusText.textContent = error?.message || "摄像头启动失败";
+            statusDot.className = "status-dot error";
+          }
+        });
+      });
+    </script>
+    <script src="./src/main.js?v=15" defer></script>
+  </body>
+</html>
