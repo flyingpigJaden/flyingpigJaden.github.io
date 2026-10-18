@@ -15,6 +15,7 @@ const debugCtx = debugCanvas.getContext("2d");
 const statusText = document.querySelector("#status-text");
 const statusDot = document.querySelector("#status-dot");
 const startButton = document.querySelector("#start-camera");
+const previewButton = document.querySelector("#start-preview");
 const moveMeter = document.querySelector("#move-meter");
 const spreadMeter = document.querySelector("#spread-meter");
 
@@ -50,6 +51,9 @@ let pendingFingerFrames = 0;
 let shapeModeIndex = 0;
 let isStartingCamera = false;
 let animationStarted = false;
+let previewRunning = false;
+let previewStartedAt = 0;
+let lastPreviewShape = -1;
 
 const gesture = {
   active: 0,
@@ -77,14 +81,24 @@ function init() {
   window.__gestureParticleAppReady = true;
   startButton.addEventListener("pointerdown", startCameraTracking);
   startButton.addEventListener("click", startCameraTracking);
+  previewButton.addEventListener("click", () => {
+    if (previewRunning) stopPreview();
+    else startPreview();
+  });
   window.addEventListener("keydown", handleShapeKeydown);
   window.addEventListener("resize", resize);
   setStatus("正在加载粒子画面...", "loading");
 
-  setupParticleScene().catch((error) => {
-    console.error(error);
-    setStatus("粒子库加载失败，请检查网络后刷新页面", "error");
-  });
+  setupParticleScene()
+    .then(() => {
+      previewButton.disabled = false;
+      window.__scriptedPreviewReady = true;
+      if (new URLSearchParams(window.location.search).get("preview") === "1") startPreview();
+    })
+    .catch((error) => {
+      console.error(error);
+      setStatus("粒子库加载失败，请检查网络后刷新页面", "error");
+    });
 }
 
 async function setupParticleScene() {
@@ -232,6 +246,7 @@ async function startCameraTracking(event) {
     return;
   }
 
+  if (previewRunning) stopPreview();
   isStartingCamera = true;
   startButton.disabled = true;
   startButton.textContent = "正在开启...";
@@ -244,6 +259,7 @@ async function startCameraTracking(event) {
 
     startButton.textContent = "摄像头已开启";
     startButton.classList.add("is-ready");
+    previewButton.disabled = true;
     setStatus("举起手：移动手掌控制位置，张开/捏合控制扩散", "ready");
   } catch (error) {
     console.error(error);
@@ -306,10 +322,59 @@ async function setupHandLandmarker() {
 }
 
 function tick(time) {
-  updateHandTracking(time);
+  if (previewRunning) updateScriptedPreview(time);
+  else updateHandTracking(time);
   updateParticles(time * 0.001);
   renderer.render(scene, viewCamera);
   requestAnimationFrame(tick);
+}
+
+function startPreview() {
+  if (!renderer || handLandmarker || isStartingCamera) return;
+  previewRunning = true;
+  previewStartedAt = performance.now();
+  lastPreviewShape = -1;
+  document.querySelector(".app").classList.add("is-preview");
+  previewButton.textContent = "结束预览";
+  setStatus("脚本预览：模拟手掌移动、张开与捏合", "ready");
+}
+
+function stopPreview() {
+  previewRunning = false;
+  document.querySelector(".app").classList.remove("is-preview");
+  previewButton.textContent = "观看无摄像头预览";
+  gesture.active = 0;
+  gesture.speed = 0;
+  gesture.pinch = 0;
+  gesture.spread = 0.35;
+  setStatus("粒子已启动，点击开启摄像头", "loading");
+}
+
+function updateScriptedPreview(time) {
+  const seconds = (time - previewStartedAt) * 0.001;
+  const phase = seconds % 12;
+  const shape = phase < 3 ? 0 : phase < 6 ? 3 : phase < 9 ? 2 : 1;
+  if (shape !== lastPreviewShape) {
+    lastPreviewShape = shape;
+    shapeModeIndex = shape;
+    setShapeTargets(shape);
+  }
+
+  gesture.active = 1;
+  gesture.offsetX = Math.sin(seconds * 0.8) * 0.65;
+  gesture.offsetY = Math.sin(seconds * 0.55) * 0.35;
+  gesture.spread = phase < 3
+    ? lerp(0.18, 0.48, phase / 3)
+    : phase < 6
+      ? lerp(0.48, 0.96, (phase - 3) / 3)
+      : phase < 9
+        ? lerp(0.96, 0.14, (phase - 6) / 3)
+        : lerp(0.14, 0.36, (phase - 9) / 3);
+  gesture.pinch = phase >= 8 && phase < 10 ? Math.sin(((phase - 8) / 2) * Math.PI) * 0.9 : 0;
+  gesture.twist = Math.sin(seconds * 0.48) * 0.65;
+  gesture.speed = 0.28 + Math.abs(Math.cos(seconds * 0.9)) * 0.24;
+  moveMeter.value = gesture.speed;
+  spreadMeter.value = gesture.spread;
 }
 
 function updateHandTracking(time) {

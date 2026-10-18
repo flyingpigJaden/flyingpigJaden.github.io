@@ -84,10 +84,17 @@ body {
   box-shadow: 0 0 14px rgba(255, 93, 93, 0.7);
 }
 
-.camera-button {
+.action-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.camera-button,
+.preview-button {
   width: 100%;
   height: 36px;
-  margin-top: 12px;
   border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 8px;
   background: #f4f7fb;
@@ -98,13 +105,37 @@ body {
   cursor: pointer;
 }
 
-.camera-button:hover {
+.camera-button:hover,
+.preview-button:hover {
   background: #dfe8f5;
 }
 
-.camera-button:disabled {
+.camera-button:disabled,
+.preview-button:disabled {
   cursor: wait;
   opacity: 0.72;
+}
+
+.preview-button {
+  background: rgba(233, 185, 73, 0.14);
+  color: #f7d47f;
+  border-color: rgba(233, 185, 73, 0.35);
+  font-size: 12px;
+}
+
+.preview-button:hover {
+  background: rgba(233, 185, 73, 0.24);
+}
+
+.preview-disclosure {
+  margin: 8px 0 0;
+  color: rgba(244, 247, 251, 0.58);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.app.is-preview .camera-panel {
+  display: none;
 }
 
 .camera-button.is-ready {

@@ -17,7 +17,11 @@
           <span id="status-dot" class="status-dot"></span>
           <span id="status-text">粒子已启动，点击开启摄像头</span>
         </div>
-        <button id="start-camera" class="camera-button" type="button">开启摄像头</button>
+        <div class="action-row">
+          <button id="start-preview" class="preview-button" type="button" disabled>观看无摄像头预览</button>
+          <button id="start-camera" class="camera-button" type="button">开启摄像头</button>
+        </div>
+        <p class="preview-disclosure">预览由脚本模拟张合与移动；摄像头模式使用真实手势。</p>
         <div class="metrics">
           <span>移动</span>
           <meter id="move-meter" min="0" max="1" value="0"></meter>
@@ -74,6 +78,6 @@
         });
       });
     </script>
-    <script src="./src/main.js?v=15" defer></script>
+    <script src="./src/main.js?v=16" defer></script>
   </body>
 </html>
