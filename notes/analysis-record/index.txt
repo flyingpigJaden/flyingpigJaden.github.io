@@ -58,7 +58,7 @@ d:I[9665,[],"OutletBoundary"]
       root.lang = 'en';
       root.setAttribute('data-locale', 'en');
     }
-  a:T135d0,> 这份公开版取自我的 Obsidian「分析记录」，整理了 3D Gaussian Splatting 相关论文的索引、方法分类和阅读卡片。内容会随阅读进展更新。
+  a:T1d910,> 这份公开版同步自我的 Obsidian《分析记录》（更新于 2026-11-20），整理了 34 篇 3D Gaussian Splatting 论文卡片、方法分类与阅读笔记。此页面聚焦文献分析；个人实验记录与未公开的项目方案不包含在内。
 
 ## A. 总览索引
 
@@ -166,6 +166,108 @@ A5 本子建议用“每篇论文一小块”的竖排格式。不要压成横�
 阶：表示层设计 + 训练中 refinement + 渲染时
 核：N-D GMM + Random-projection Culling + Optimization-Controlled Refinement
 值：★★★★★
+
+18 Deformable 3D Gaussians
+类：单目动态重建 / canonical Gaussian / 形变场
+阶：动态表示 + 训练中密度控制
+核：Canonical Gaussians + Deformation MLP + Annealing Smooth Training
+值：★★★★★
+
+19 4D Gaussian Splatting
+类：动态重建 / 时空特征编码 / 实时渲染
+阶：动态表示 + 训练中密度控制
+核：HexPlane + Multi-head Gaussian Deformation + Splatting
+值：★★★★☆
+
+20 Localized Points Management
+类：局部错误定位 / 多视角几何 / 加点与校准
+阶：训练中 densification + opacity reset + pruning
+核：Paired Error Regions + 3D Zone + Local Point Management
+值：★★★★★
+
+21 SteepGS
+类：损失感知增密 / 紧凑表示
+阶：训练中 density control
+核：Splitting Matrix + 负特征值选点 + 分裂方向
+值：★★★★☆
+
+22 SAD-GS
+类：结构感知增密 / 短训练收敛
+阶：训练前多尺度统计 + 训练中增密
+核：局部细节尺度 + 投影轴长比 + 按轴 split
+值：★★★★★
+
+23 GS²
+类：紧凑表示 / 停止增密 / 剪枝后恢复
+阶：训练中分阶段控制
+核：ELBO-inspired 停止 + Opacity Pruning + 图空间优化
+值：★★★☆
+
+24 PDEO
+类：位置优化 / 粒子网格协同 / 增密门控
+阶：训练迭代更新 + densification event
+核：P2G/G2P + Scale/Confidence Loss + 方向一致性
+值：★★★☆
+
+25 EDGS
+类：多视角几何初始化 / 无增密短训练
+阶：训练前初始化 + 训练中优化与剪枝
+核：密集匹配 + 三角化 + 均匀采样 + SH 初始化
+值：★★★★☆
+
+26 VAD-GS
+类：动态城市场景 / 可见性 / 几何补点
+阶：训练中诊断、MVS 补点与几何约束
+核：体素可见性 + 支持视角选择 + MVS
+值：★★★★☆
+
+27 RAP
+类：学习式重要性 / 前馈评分 / 剪枝
+阶：离线训练评分器 + 部署时评分剪枝
+核：属性与 KNN 特征 + MLP + 软剪枝监督
+值：★★★☆
+
+28 ResGS
+类：残差式增密 / 粗细层级 / 细节恢复
+阶：训练中增密 + 分辨率日程
+核：保留弱化 parent + 小 child + 金字塔 + 分层梯度门槛
+值：★★★★☆
+
+29 Revising Densification
+类：误差归因增密 / clone 透明度 / 增长控制
+阶：训练中 ADC + opacity 管理
+核：Error-Based Densification + Opacity Correction + Growth Control
+值：★★★★☆
+
+30 Pixel-GS
+类：像素感知梯度 / 深度缩放 / 增密
+阶：训练中梯度统计与 ADC
+核：参与像素加权梯度 + 近相机深度抑制
+值：★★★☆
+
+31 Confidence-Aware Densification
+类：学习式置信度 / 固定容量点迁移
+阶：训练中源点采样、回收与新点初始化
+核：Learned Confidence + 双分支采样 + 最大贡献迁移
+值：★★★☆（2026 预印本）
+
+32 SeG-Gaussian
+类：分割区域增密 / 局部空间正则
+阶：训练中区域选点 + 后期位置优化
+核：区域误差 + alpha 贡献 + 排斥/平滑
+值：★★★★☆
+
+33 GeoTexDensifier
+类：纹理感知增密 / 深度校验 / child 放置
+阶：训练中额外 split 与几何过滤
+核：纹理加权贡献面积 + VDRC + 法线引导位置
+值：★★★★☆（预印本，公式待核）
+
+34 IndoorGS
+类：室内几何初始化 / 来源分流 ADC / 切平面增密
+阶：训练前线索提取 + 训练中几何监督和增密
+核：线/SfM/平面状线索 + 分型 ADC + 切平面 clone/split
+值：★★★★☆（FastGS 迁移前提尚未通过 P0）
 ```
 
 ## B. 缩写说明
@@ -226,6 +328,8 @@ Dyn = Dynamic / Temporal / 动态、时间维度
 
 代表论文：
 - Prune Wisely
+- GS² 的渐进 opacity pruning
+- RAP 的学习式 importance 评分（可用于周期剪枝；评分器训练另计）
 
 重点问题：
 - 什么时候剪？
@@ -243,6 +347,18 @@ Dyn = Dynamic / Temporal / 动态、时间维度
 - PSCD-GS
 - Neural Gabor Splatting 的 frequency-aware densification
 - N-Dimensional Gaussians 的 Optimization-Controlled Refinement
+- SteepGS 的损失感知 split
+- SAD-GS 的结构尺度感知 split
+- PDEO 的更新方向一致性门控
+- VAD-GS 的可见性诊断与 MVS 补点
+- GS² 的场景级停止增密判据
+- ResGS 的 residual split 与粗细层级门槛
+- Revising Densification 的误差归因和增长控制
+- Pixel-GS 的参与像素加权梯度与深度缩放
+- Confidence-Aware Densification 的固定容量源点/迁移协同
+- SeG-Gaussian 的区域误差与贡献门控
+- GeoTexDensifier 的纹理面积、深度比与 child 放置
+- IndoorGS 的来源分流与线点切平面增密
 
 重点问题：
 - 哪些区域需要更多 Gaussian？
@@ -295,6 +411,8 @@ Dyn = Dynamic / Temporal / 动态、时间维度
 代表论文：
 - Z-Order Transformer
 - VGGT / S-VGGT 可作为相关背景
+- EDGS 的多视角密集匹配、三角化与初始化（并非前馈预测最终 Gaussian）
+- RAP 的前馈重要性预测（并非前馈重建）
 
 重点问题：
 - 是否减少 per-scene optimization？
@@ -322,6 +440,8 @@ Dyn = Dynamic / Temporal / 动态、时间维度
 
 代表论文：
 - DNGaussian
+- GeoTexDensifier 的单目深度比校验与法线引导
+- IndoorGS 的线/SfM/平面状初始化与几何监督
 
 重点问题：
 - 单目深度只有相对尺度，怎样与渲染深度对齐？
@@ -344,15 +464,13 @@ Dyn = Dynamic / Temporal / 动态、时间维度
 
 ### 11. 待精读候选（尚未建完整方法卡）
 
-以下论文由导师推荐过，但目前只完成相关性筛选。为避免把“听过/粗读”误记成“已经精读”，暂不占用 01-17 的详细卡编号。
+以下论文由导师推荐过，但目前只完成相关性筛选。为避免把“听过/粗读”误记成“已经精读”，暂不占用详细卡编号。
 
 - [PUP 3D-GS: Principled Uncertainty Pruning](https://openaccess.thecvf.com/content/CVPR2025/html/Hanson_PUP_3D-GS_Principled_Uncertainty_Pruning_for_3D_Gaussian_Splatting_CVPR_2025_paper.html), CVPR 2025：二阶重建误差敏感度 + multi-round prune-refine；与高压缩 post-training pruning 相关。
-- [Steepest Descent Density Control for Compact 3DGS](https://openaccess.thecvf.com/content/CVPR2025/html/Wang_Steepest_Descent_Density_Control_for_Compact_3D_Gaussian_Splatting_CVPR_2025_paper.html), CVPR 2025：从优化理论推导 split 条件、offspring 数量、更新方向与 opacity normalization；与 FastGS VCD / soft child 很相关。
-- [Improving Gaussian Splatting with Localized Points Management](https://openaccess.thecvf.com/content/CVPR2025/html/Yang_Improving_Gaussian_Splatting_with_Localized_Points_Management_CVPR_2025_paper.html), CVPR 2025：用多视角几何与 rendering error 定位需要增点/校准的局部 zone，并重置前方错误高 opacity 点；已展示静态与动态 4D 插件性。
 - [Speedy-Splat](https://openaccess.thecvf.com/content/CVPR2025/html/Hanson_Speedy-Splat_Fast_3D_Gaussian_Splatting_with_Sparse_Pixels_and_Sparse_CVPR_2025_paper.html), CVPR 2025：precise Gaussian-tile intersection + primitive pruning；是 FastGS Compact Box 的重要前序，避免重复实现已有 pair culling。
-- [Faster 3D Gaussian Splatting Convergence via Structure-Aware Densification](https://vcai.mpi-inf.mpg.de/projects/SAD-GS/), SIGGRAPH 2026：多尺度结构 tensor、局部频率 violation、多视角一致与按轴解析 split；论文代码建立在 3DGS/FastGS 上，当前动态 VCD 主线的精读优先级很高。
+- Variance and Displacement Consistency Aware Densification, VMV 2026：目前只有摘要预读，全文方法与实验未核；不能占用完整卡片编号。
 
-建议精读顺序：`SAD-GS → LPM → SteepGS → PUP 3D-GS → Speedy-Splat`。前两篇最贴近“FastGS + 动态/结构引导 densification”，后两篇更偏 post-training pruning 与 renderer 背景。
+SteepGS、SAD-GS 与 LPM 已有下方详细卡片；候选可先读 PUP 3D-GS 与 Speedy-Splat，再按新的实验问题选论文。
 
 ---
 
@@ -446,21 +564,6 @@ Size / FPS / PSNR / SSIM / LPIPS / Gaussian 数量
 - 计算全局 significance 需要遍历训练视角和像素，成本不低。
 - 主要是 general 3DGS 压缩，没有直接考虑 semantic / object / edge-aware。
 - 对动态 Avatar / human Gaussian 迁移时，需要考虑 SMPL-X topology。
-
-### 对我的启发
-
-```text
-可直接复现：
-significance pruning + recovery fine-tune
-
-可借鉴：
-SH 降阶、pseudo-view distillation、低重要性 SH VQ
-
-可能创新：
-在 LightGaussian score 中加入 edge / semantic / human-region 权重。
-```
-
----
 
 ## 02. FastGS: Training 3D Gaussian Splatting in 100 Seconds
 
@@ -620,8 +723,6 @@ tile 内 pair list
 renderCUDA alpha blending
 ```
 
-你现在记录的几个指标对应：
-
 ```
 num_rendered
 = Gaussian-tile pairs 总数
@@ -662,31 +763,6 @@ Training Time / PSNR / SSIM / LPIPS / Gaussian Count / GPU Memory
 - 方法效果与当前训练视角分布有关，极稀疏视角时“多视角一致性”证据会减弱；
 - Compact Box 的 pair 减少不一定稳定转化为端到端 FPS，取决于 GPU、kernel、pair 数量和其他框架开销；
 - VCD/VCP 改变了训练历史，因此不能只用最终 pruning score 的局部比较解释全部收益。
-
-### 对我的启发
-
-```
-已经复现并扩展：
-FastGS VCP + Global Light-T；
-压力感知 Quota100 selector；
-严格固定每轮删除量和最终 Gaussian 数。
-
-当前关键发现：
-低压力时，opacity 候选足够，换 score 改变很小；
-强压缩时，低-opacity 候选不足，Quota100 + Light-T 的 score fill 才真正接管删除预算。
-
-后续质量方向：
-从“VCP 中换 score”升级为 residual-guided reallocation：
-删掉冗余 Gaussian 后，
-将等量容量通过 VCD clone/split 放到多视角高残差区域。
-
-后续速度方向：
-你的 clean raster-core profile 表明 renderCUDA 约占 50%；
-应优先探索 FlashGS 类的 size-aware task partitioning，
-而不是先投入 radix sort 优化。
-```
-
----
 
 ## 03. Speeding Up the Learning of 3D Gaussians with Much Shorter Gaussian Lists
 
@@ -790,7 +866,6 @@ w_i(p) = T_i(p) × α_i(p)  它对最终像素真正贡献了多少
 T_i(p) = Π over k<i (1 - α_k(p))  光线到达它之前还剩多少
 ```
 
-
 ```
 σ：Gaussian 自己整体有多不透明
 g(p)：它在这个像素位置还剩多强
@@ -825,7 +900,6 @@ L_entropy = mean over pixels of H(p)
 
 L_total = L_photo + γ × L_entropy
 ```
-
 
 最小化 entropy 后：
 
@@ -933,67 +1007,6 @@ Inference FPS
 - 额外的 entropy forward/backward 实现必须保持高效，否则正则化本身会抵消部分速度收益；
 - 论文的 list 定义常更接近 per-pixel/per-tile workload；不同 rasterizer 的 `num_rendered`、bucket 和像素 list 不能混为同一个绝对量。
 
-### 对我的启发
-
-```
-已成功融合：
-在 FastGS rasterizer 中实现可微 alpha-blending entropy：
-H(p) = -Σ_i w_i log(w_i) - T_final log(T_final)
-
-训练损失：
-L = L_photo + FASTGS_ENTROPY_LAMBDA × mean(H)
-
-当前最佳强压缩配置：
-Quota100 + Global Light-T + Entropy λ=.020
-
-最强证据：
-Truck, keep=.53, final points=166,360, 两个共同 recovery seed：
-PSNR  +0.0461 dB
-SSIM  +0.00202
-LPIPS -0.00323
-rendered P95 -16.3%
-```
-
-```
-已经证实的机制：
-Entropy 让 keep=.53 的 raster-core 总时间下降 12.2%，
-其中 renderCUDA 下降 17.1%。
-
-当前不应夸大的地方：
-Entropy 是训练期表征重分配；
-它不直接决定 Quota100 删除哪些点。
-它会改变低-opacity 候选池，因此 selector 与 entropy 的组合收益
-应表述为融合结果，不能完全归因给 selector。
-```
-
-```
-Scale Reset 当前结论：
-FastGS 中同步执行 “Scale Reset f=.20 + VCP prune”
-导致质量显著下降。
-
-这不等于否定 ShorterSplatting 原文：
-原文 reset 后有继续训练与属性修复窗口；
-你当前实验把 reset 与固定强剪枝事件绑定，存在明显混杂。
-因此该分支应冻结，未来若重做，必须：
-reset 和 prune 错开；
-reset 后保留恢复窗口；
-单独测 reset，再测 reset + entropy。
-```
-
-```
-下一步最值得做：
-1. 跨场景复现 keep=.53 的 Quota100 + Light-T vs + Entropy .020；
-2. 使用两个共同 recovery seed；
-3. 报告质量、Gaussian 数、rendered mean/P95、bucket mean/P95、
-   raster-core 时间和 Pure FPS；
-4. 将 Entropy 与 FlashGS 类 renderCUDA 调度融合，
-   因为 Entropy 已经缩短输入 list，而 renderCUDA 仍是主瓶颈。
-```
-
-
-
-
-
 ## 04. Prune Wisely, Reconstruct Sharply
 
 来源：[CVPR 2026 Open Access](https://openaccess.thecvf.com/content/CVPR2026/html/Wang_Prune_Wisely_Reconstruct_Sharply_Compact_3D_Gaussian_Splatting_via_Adaptive_CVPR_2026_paper.html)
@@ -1082,25 +1095,6 @@ PSNR / SSIM / LPIPS
 - 3D-DoG 对 aggressive pruning 后的边缘和高频细节恢复很关键。
 
 ### 局限
-
-- 3D-DoG 需要改 primitive 表示，工程难度比单纯 checkpoint 后处理高。
-- 如果要迁移到 ExAvatar，需要考虑 human Gaussian 与 SMPL-X topology 的绑定。
-- 对你当前阶段，完整复现可能偏重。
-
-### 对我的启发
-
-```text
-可直接借鉴：
-adaptive pruning schedule、high-frequency/detail-aware pruning score
-
-暂时不急着做：
-完整 3D-DoG primitive
-
-可能创新：
-把 Prune Wisely 的 reconstruction-aware 思想与 LightGaussian significance、edge-aware score、semantic mask 结合。
-```
-
----
 
 ## 05. Improving Densification in 3D Gaussian Splatting for High-Fidelity Rendering
 
@@ -1198,20 +1192,6 @@ Gaussian 数量
 - Recovery-Aware Pruning 减少 floater。
 - Growth Control 避免过早过密。
 
-### 对我的启发
-
-```text
-可直接借鉴：
-Edge-Aware Score
-Recovery-Aware reliability 判断
-
-可能创新：
-在 LightGaussian / opacity pruning 中加入 edge protection：
-importance = render contribution + edge contribution + residual contribution
-```
-
----
-
 ## 06. Mobile-GS: Real-time Gaussian Splatting for Mobile Devices
 
 来源：[GitHub / arXiv 信息](https://github.com/xiaobiaodu/Mobile-GS)
@@ -1276,25 +1256,6 @@ rendering resolution
 
 ### 局限
 
-- 系统工程较重。
-- mobile-side Vulkan 代码可能未完全公开。
-- 对你当前 checkpoint 后处理实验，排序/renderer 改动不是最容易先做的。
-
-### 对我的启发
-
-```text
-可借鉴：
-移动端评价标准、contribution pruning、quantization
-
-暂时不急做：
-完整 mobile renderer
-
-可能创新：
-把压缩评价从 size/PSNR 扩展到端侧 FPS、显存、带宽。
-```
-
----
-
 ## 07. 3D Gaussian Splatting at Arbitrary Resolutions with Compact Proxy Anchors
 
 来源：[CVPR 2026 Open Access](https://openaccess.thecvf.com/content/CVPR2026/html/Jeong_3D_Gaussian_Splatting_at_Arbitrary_Resolutions_with_Compact_Proxy_Anchors_CVPR_2026_paper.html)
@@ -1352,21 +1313,6 @@ Render at arbitrary resolution with reduced memory
 它是从表示结构上改变“存什么”和“怎么生成 Gaussian”。
 ```
 
-### 对我的启发
-
-```text
-可借鉴：
-anchor/proxy 思想，说明压缩可以发生在 representation design 阶段。
-
-暂时不急做：
-完整 anchor-based framework。
-
-可能创新：
-ExAvatar / scene Gaussian 是否也能用 proxy/group 表示减少冗余？
-```
-
----
-
 ## 08. Neural Gabor Splatting
 
 来源：[CVPR 2026 Open Access](https://openaccess.thecvf.com/content/CVPR2026/html/Watanabe_Neural_Gabor_Splatting_Enhanced_Gaussian_Splatting_with_Neural_Gabor_for_CVPR_2026_paper.html)
@@ -1422,22 +1368,6 @@ Neural Gabor：用 neural module 增强单个 primitive 的高频颜色表达。
 也可以增强 primitive 自身能力。
 ```
 
-### 对我的启发
-
-```text
-可借鉴：
-high-frequency / frequency-aware 重要性判断。
-
-暂时不急做：
-给每个 Gaussian 加 MLP，工程成本较高。
-
-可能创新：
-剪枝时保护频率能量高的区域；
-低频区域多剪，高频区域少剪。
-```
-
----
-
 ## 09. Z-Order Transformer for Feed-Forward Gaussian Splatting
 
 来源：[CVPR 2026 Open Access](https://openaccess.thecvf.com/content/CVPR2026/html/Wang_Z-Order_Transformer_for_Feed-Forward_Gaussian_Splatting_CVPR_2026_paper.html)
@@ -1484,29 +1414,6 @@ Pooling suppresses redundant Gaussians
 ↓
 Predict Gaussian attributes in one forward pass
 ```
-
-### 对我当前实验的结论
-
-你已经尝试过 Z-order local scene pruning：
-- checkpoint 从约 769M 降到 719M；
-- 前景基本不变；
-- 但 global opacity prune25 质量更接近 baseline；
-- Z-order 当前更多是辅助空间组织工具，不适合作为主线创新。
-
-### 对我的启发
-
-```text
-可借鉴：
-空间分块、局部统计、抽帧或区域聚合。
-
-不建议强行做：
-把 Z-order 当作压缩核心创新。
-
-可能保留方向：
-Z-order + 更强 score，例如 edge / residual / semantic score。
-```
-
----
 
 ## 10. Expressive Whole-Body 3D Gaussian Avatar / ExAvatar
 
@@ -1556,31 +1463,6 @@ Drive avatar with novel body pose, hand pose, facial expression
 ↓
 Render from novel viewpoints
 ```
-
-### 和我实验的关系
-
-你当前 ExAvatar / NeuMan Bike 复现暴露了几个真实问题：
-- checkpoint 很大；
-- human_gaussian.pose_dirs 很大；
-- scene_gaussian.feature_rest 很大；
-- scene Gaussian 点多，有低贡献冗余；
-- full forward 远慢于 rasterizer。
-
-### 对我的启发
-
-```text
-可直接研究：
-scene Gaussian pruning、feature_rest 压缩、checkpoint storage 压缩。
-
-要谨慎：
-human Gaussian 不能像普通点云一样无结构剪枝。
-
-可能创新：
-human Gaussian region-aware / topology-aware compression：
-手、脸、关节少剪，躯干/稳定区域多剪。
-```
-
----
 
 ## 11. Structure-Aware Fine-Grained Gaussian Splatting / SFGS
 
@@ -1633,22 +1515,6 @@ Hand refinement improves fine-grained deformation
 ↓
 Render expressive avatar
 ```
-
-### 对我的启发
-
-```text
-可借鉴：
-joint-aware / region-aware 思路。
-
-用于压缩：
-不同人体区域设置不同 pruning ratio：
-手/脸/关节保护，躯干和稳定区域更强压缩。
-
-注意：
-它主要解决 expressive avatar reconstruction，不是 checkpoint 压缩论文。
-```
-
----
 
 ## 12. HumanSplatHMR: Closing the Loop Between Human Mesh Recovery and Gaussian Splatting Avatar
 
@@ -1734,22 +1600,6 @@ Rendering: PSNR, SSIM, LPIPS
 - 去掉 depth loss，global 3D alignment 变差。
 - learnable skinning weights 可提高渲染，但可能让 Gaussian 脱离 mesh，损害 SMPL accuracy。
 - CAMEL 在 rendering quality 和 SMPL accuracy 之间取得更好平衡。
-
-### 对我的启发
-
-```text
-可借鉴：
-mask / depth supervision 可以帮助 Gaussian 与人体结构对齐。
-
-用于压缩：
-可把 SAM mask / human region / depth consistency 用作 Gaussian importance prior。
-
-可能创新：
-human-aware pruning：
-根据 Gaussian 是否位于人体 mask、边界、衣服区域、关节附近，设置不同剪枝强度。
-```
-
----
 
 ## 13. DNGaussian: Optimizing Sparse-View 3D Gaussian Radiance Fields with Global-Local Depth Normalization
 
@@ -1862,30 +1712,6 @@ D_GN(x) = [D(x) - mean(D(P))] / [std(D_image) + eps]
 - 动态视频中不同帧的单目深度可能有独立的 scale/shift 漂移，不能逐帧直接套用。
 - 额外深度模型推理和 depth loss 也会增加预处理与训练成本。
 
-### 对我的启发
-
-```text
-可直接借鉴：
-把 depth 定义为 geometry supervision，明确它更新哪些属性；
-对伪深度先做 scale-invariant 的 global/local alignment。
-
-与 FastGS 的结合位置：
-RGB loss + depth loss 共同训练；
-depth residual 可辅助 Dynamic VCD 判断哪里几何欠拟合，
-但不能未经实验就直接塞进 VCP importance。
-
-当前 M3 假设：
-Dynamic FastGS + Feed-forward initialization + Robust depth loss
-是否能在 equal-time 下提高几何与渲染质量，
-或在 equal-quality 下更早收敛。
-
-动态扩展必须新增：
-per-frame scale/shift alignment、depth confidence、
-temporal consistency 与运动/遮挡 mask。
-```
-
----
-
 ## 14. Perceptual-GS: Scene-adaptive Perceptual Densification for Gaussian Splatting
 
 来源：[arXiv](https://arxiv.org/abs/2506.12400) ｜ [Official Code](https://github.com/eezkni/Perceptual-GS)
@@ -1997,29 +1823,6 @@ Full： 28.01 PSNR / 0.839 SSIM / 0.172 LPIPS / 2.69M
 - 二值阈值、high/medium 分组、事件间隔等超参数较多。
 - 额外 sensitivity 参数和渲染分支增加训练复杂度。
 - 论文主要验证静态场景；动态视频中的纹理运动、遮挡和时间闪烁尚未处理。
-
-### 对我的启发
-
-```text
-最直接的结合点是 FastGS VCD，而不是先改 VCP：
-FastGS 负责多视角一致的“是否需要容量”；
-Perceptual-GS 提供“这部分容量对人眼是否值得”。
-
-候选实验：
-先由 FastGS VCD 得到候选，
-再用 sensitivity 只调整候选优先级或固定预算内的名额，
-严格保持 densification event、净增长量与训练时间协议可比。
-
-不能直接宣称：
-edge-aware pruning 已由此证明有效；
-论文验证的是训练期容量分配，不是训练后剪枝。
-
-动态迁移：
-把单帧 sensitivity 升级为 temporal-consistent sensitivity，
-否则快速运动纹理可能被误判并产生 flicker。
-```
-
----
 
 ## 15. PSCD-GS: Role-Aware Perception-Structure Collaborative Densification for 3D Gaussian Splatting
 
@@ -2143,30 +1946,6 @@ Tanks & Temples：24.5968 / 0.8815 / 0.1407
 - soft role 与决策仍含多组固定阈值，跨场景鲁棒性需要额外复核。
 - 当前 PDF 的正式发表状态不明确，投稿引用前必须核验最新版本。
 
-### 对我的启发
-
-```text
-它给我的最大启发不是“再加两个 score”，而是拆开三项决策：
-where to densify / clone or split / where to place children。
-
-与 FastGS 的结合：
-FastGS VCD 先提供多视角一致的 gradient demand；
-PSCD 的 P/Q role 只在固定增长预算内重排候选并决定操作；
-这样不会绕开 FastGS baseline 的核心机制。
-
-动态扩展假设：
-P = perceptual / appearance evidence
-Q = geometry / depth evidence
-R = temporal persistence / motion reliability
-用 P-Q-R role 驱动 Dynamic VCD。
-
-注意：
-P-Q-R 是我的研究假设，不是 PSCD-GS 已经证明的结论。
-第一步应先做小规模 P/Q 插件消融，统计额外 wall-clock 开销。
-```
-
----
-
 ## 16. HyperGaussians: High-Dimensional Gaussian Splatting for High-Fidelity Animatable Face Avatars
 
 来源：[CVPR 2026 Paper](https://openaccess.thecvf.com/content/CVPR2026/html/Serifi_HyperGaussians_High-Dimensional_Gaussian_Splatting_for_High-Fidelity_Animatable_Face_Avatars_CVPR_2026_paper.html) ｜ [Project Page](https://gserifi.github.io/HyperGaussians/) ｜ [Official Code](https://github.com/gserifi/HyperGaussians)
@@ -2285,30 +2064,6 @@ LPIPS 0.20273 → 0.19768
 - 高维表示仍增加参数、显存和条件计算，只是 inverse covariance trick 大幅缓解而非消除。
 - 论文重点是高保真表达，不是 pruning、densification 或训练到 100 秒。
 - 条件 uncertainty 没有被论文直接用于 VCP；把它当 pruning risk 需要重新验证。
-
-### 对我的启发
-
-```text
-对当前动态主线的直接价值：
-动态 Gaussian 不一定只是“3D Gaussian + deformation offset”；
-primitive 自身的条件表达能力会决定细节是否需要靠大量增点补偿。
-
-与 Dynamic FastGS 的潜在结合：
-VCD 决定哪里需要新增动态容量；
-HyperGaussian latent 负责在时间/表情变化下复用已有容量；
-若单个高维 primitive 已能表达变化，可能减少重复 densification。
-
-候选研究假设：
-Dynamic VCP risk = rendering contribution
-                   × temporal persistence
-                   × uncertainty protection
-
-其中 uncertainty protection 只是我的扩展设想。
-必须先验证 uncertainty 高代表“必要但难预测”，
-还是代表“噪声和不可靠”，两种解释的剪枝方向正好相反。
-```
-
----
 
 ## 17. N-Dimensional Gaussians for Fitting of High Dimensional Functions
 
@@ -2429,40 +2184,945 @@ Tools：Ours 0.27M, 41.23 ms / 3DGS 1.36M, 70.57 ms
 - 论文展示的是视角/材质等高维函数，虽提到 time 维度，但没有直接完成通用单目动态重建。
 - 其 Cholesky 表示与 FastGS 的 quaternion + scale 参数化不同，不能直接复制 child 公式。
 
-### 对我的启发
+## 18. Deformable 3D Gaussians for High-Fidelity Monocular Dynamic Scene Reconstruction
+
+来源：[CVPR 2024 论文](https://openaccess.thecvf.com/content/CVPR2024/html/Yang_Deformable_3D_Gaussians_for_High-Fidelity_Monocular_Dynamic_Scene_Reconstruction_CVPR_2024_paper.html) ｜ [arXiv 全文](https://arxiv.org/html/2309.13101) ｜ [官方代码](https://github.com/ingra14m/Deformable-3D-Gaussians)
+
+### 基本信息
 
 ```text
-最值得迁移到 FastGS 的不是整套 N-D renderer，
-而是 Optimization-Controlled Refinement：
-
-FastGS VCD 先确定多视角/多帧一致的候选 parent
-↓
-给候选挂低-opacity soft child，而不是立即硬 split
-↓
-短窗口优化
-↓
-child contribution 达阈值才 materialize
-↓
-未被利用的 child 直接丢弃
+年份/会议：CVPR 2024
+所属分类：动态重建 / 形变场 / 训练中加点
+方法阶段：初始化 → Gaussian warm-up → 联合训练与密度控制 → 按时间渲染
+对我重要性：★★★★★
 ```
 
-这可能减少错误 split 和 densification 后的 loss spike，同时仍保留 FastGS 的候选选择与容量预算。
+### 解决的问题
+
+静态 3DGS 的每个 Gaussian 固定在场景里，不能直接表达单目视频中随时间运动、变形的物体。逐帧单独训练既不能共享几何，也不容易在未见时刻插值。该论文让一套 canonical Gaussians 通过时间条件形变场生成任意时刻的 Gaussian，同时保留可微 splatting 的渲染效率。
+
+### 核心方法
+
+1. Canonical 3D Gaussians：维护一套可学习的标准空间 Gaussian；SfM 点云或随机点初始化，不为每一帧存一套完整独立点云。
+2. Deformation MLP：将 Gaussian 的 canonical 位置与时间经 positional encoding 输入 MLP，预测位置、旋转、尺度偏移；位置输入使用 stop-gradient，避免通过该输入路径产生不受控的梯度耦合。形变后的 Gaussian 再用 3DGS rasterizer 渲染。
+3. 分阶段优化：前 3k iterations 先优化 Gaussians，不训练形变场；之后联合优化 Gaussian 与形变网络，并执行自适应密度控制。这里的 densification 是沿用动态训练框架中的容量管理，不是 FastGS 的 VCD。
+4. Annealing Smooth Training (AST)：训练早期在输入时间上加入逐渐衰减的扰动，鼓励相邻时刻预测平滑，后期减小扰动以保住细节；重点针对真实数据相机姿态误差引起的时间插值抖动。
+
+### Pipeline
 
 ```text
-动态扩展：
-将 time 或 motion latent 作为额外维度，
-再研究 temporal culling 与 Dynamic VCD。
-
-第一阶段不要同时实现整套高维表示：
-先在普通 FastGS 上验证“soft child materialization”是否
-在相同净增长数和相同训练时间下优于立即 clone/split。
-
-这属于受 N-D Gaussians 启发的新实验假设，
-不是该论文已经在 FastGS 上证明的结果。
+单目动态帧 + 相机参数；SfM 点云或随机点初始化
+↓
+建立 canonical Gaussians
+↓
+前 3k 步 Gaussian warm-up
+↓
+给定时间 t，Deformation MLP 预测 delta-position/rotation/scale
+↓
+变形后 3DGS splatting → 图像损失反传
+↓
+联合优化、densification/pruning；训练早期使用 AST
+↓
+给新视角和新时刻渲染
 ```
 
----
-0:{"P":null,"b":"fV5_uhQjYwQ9XZZGeLxDU","p":"","c":["","notes","analysis-record",""],"i":false,"f":[[["",{"children":["notes",{"children":["analysis-record",{"children":["__PAGE__",{}]}]}]},"$undefined","$undefined",true],["",["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/css/61d5ea2d1ac07f91.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}]],["$","html",null,{"lang":"en","className":"scroll-smooth","suppressHydrationWarning":true,"children":[["$","head",null,{"children":[["$","link",null,{"rel":"icon","href":"/favicon.svg","type":"image/svg+xml"}],["$","script",null,{"dangerouslySetInnerHTML":{"__html":"\n              try {\n                const theme = localStorage.getItem('theme-storage');\n                const parsed = theme ? JSON.parse(theme) : null;\n                const setting = parsed?.state?.theme;\n                const effective = setting === 'dark' ? 'dark' : 'light';\n                var root = document.documentElement;\n                root.classList.add(effective);\n                root.setAttribute('data-theme', effective);\n              } catch (e) {\n                var root = document.documentElement;\n                root.classList.add('light');\n                root.setAttribute('data-theme', 'light');\n              }\n            "}}],["$","script",null,{"dangerouslySetInnerHTML":{"__html":"$2"}}]]}],["$","body",null,{"className":"font-sans antialiased","children":["$","$L3",null,{"children":["$","$L4",null,{"config":{"enabled":true,"locales":["en","zh"],"defaultLocale":"en","mode":"fixed","fixedLocale":"en","persist":true,"switcher":true,"labels":{"en":"English","zh":"中文"}},"children":[["$","$L5",null,{"items":[{"title":"About","type":"page","target":"about","href":"/"},{"title":"Projects","type":"page","target":"projects","href":"/projects"},{"title":"Now","type":"page","target":"now","href":"/now"}],"siteTitle":"Jaden","enableOnePageMode":true,"i18n":"$0:f:0:1:1:props:children:1:props:children:1:props:children:props:children:props:config","itemsByLocale":{"en":[{"title":"About","type":"page","target":"about","href":"/"},{"title":"Projects","type":"page","target":"projects","href":"/projects"},{"title":"Now","type":"page","target":"now","href":"/now"}],"zh":[{"title":"关于","type":"page","target":"about","href":"/"},{"title":"项目","type":"page","target":"projects","href":"/projects"},{"title":"近况","type":"page","target":"now","href":"/now"}]},"siteTitleByLocale":{"en":"Jaden","zh":"Jaden"}}],["$","main",null,{"className":"min-h-screen pt-16 lg:pt-20","children":["$","$L6",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L7",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":404}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],[]],"forbidden":"$undefined","unauthorized":"$undefined"}]}],["$","$L8",null,{"lastUpdated":"October 13, 2026","lastUpdatedByLocale":{"en":"October 13, 2026","zh":"2026年10月13日"},"defaultLocale":"en"}]]}]}]}]]}]]}],{"children":["notes",["$","$1","c",{"children":[null,["$","$L6",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L7",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}],{"children":["analysis-record",["$","$1","c",{"children":[null,["$","$L6",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L7",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}],{"children":["__PAGE__",["$","$1","c",{"children":[["$","$L9",null,{"content":"$a","papers":[{"number":"01","title":"LightGaussian: Unbounded 3D Gaussian Compression with 15x Reduction and 200+ FPS"},{"number":"02","title":"FastGS: Training 3D Gaussian Splatting in 100 Seconds"},{"number":"03","title":"Speeding Up the Learning of 3D Gaussians with Much Shorter Gaussian Lists"},{"number":"04","title":"Prune Wisely, Reconstruct Sharply"},{"number":"05","title":"Improving Densification in 3D Gaussian Splatting for High-Fidelity Rendering"},{"number":"06","title":"Mobile-GS: Real-time Gaussian Splatting for Mobile Devices"},{"number":"07","title":"3D Gaussian Splatting at Arbitrary Resolutions with Compact Proxy Anchors"},{"number":"08","title":"Neural Gabor Splatting"},{"number":"09","title":"Z-Order Transformer for Feed-Forward Gaussian Splatting"},{"number":"10","title":"Expressive Whole-Body 3D Gaussian Avatar / ExAvatar"},{"number":"11","title":"Structure-Aware Fine-Grained Gaussian Splatting / SFGS"},{"number":"12","title":"HumanSplatHMR: Closing the Loop Between Human Mesh Recovery and Gaussian Splatting Avatar"},{"number":"13","title":"DNGaussian: Optimizing Sparse-View 3D Gaussian Radiance Fields with Global-Local Depth Normalization"},{"number":"14","title":"Perceptual-GS: Scene-adaptive Perceptual Densification for Gaussian Splatting"},{"number":"15","title":"PSCD-GS: Role-Aware Perception-Structure Collaborative Densification for 3D Gaussian Splatting"},{"number":"16","title":"HyperGaussians: High-Dimensional Gaussian Splatting for High-Fidelity Animatable Face Avatars"},{"number":"17","title":"N-Dimensional Gaussians for Fitting of High Dimensional Functions"}]}],["$","$Lb",null,{"children":"$Lc"}],null,["$","$Ld",null,{"children":["$Le","$Lf",["$","$L10",null,{"promise":"$@11"}]]}]]}],{},null,false]},null,false]},null,false]},null,false],["$","$1","h",{"children":[null,["$","$1","XB5qiJopIQyL7fX165e2R",{"children":[["$","$L12",null,{"children":"$L13"}],null]}],null]}],false]],"m":"$undefined","G":["$14","$undefined"],"s":false,"S":true}
+### 关键 score / 公式要记什么
+
+```text
+f_theta(PE(stopgrad(x_i)), PE(t)) → (delta_x_i, delta_r_i, delta_s_i)
+x_i(t) = x_i + delta_x_i(t)
+```
+
+其余旋转、尺度也作相应更新。最重要的区别是“一个跨时刻共享的 Gaussian 集合 + 每个时刻的形变”，而不是“每帧重新训练一个静态 FastGS”。单目指每个时间点通常只有一个相机观测，不等于全序列相机始终不移动。
+
+### 实验要记
+
+### Ablation 结论
+
+- AST 对真实数据的时间平滑和平均质量有贡献；它不是一个新的剪枝或加点 score。
+- 先 warm-up 再联合训练，使初始 canonical 表示与形变学习分阶段进行；不能把这 3k 步直接套到另一个训练总步数不同的实现。
+
+### 局限
+
+- 单目视频每一时刻缺少同步多视角证据，形变、几何和相机误差容易相互补偿。
+- 快速非刚性运动、稀疏视角、姿态不准确时，canonical 对应关系可能不稳。
+- Gaussian 容量仍会影响训练、显存与渲染；论文并未证明 FastGS VCD/VCP 可以原样移植到形变模型。
+
+## 19. 4D Gaussian Splatting for Real-Time Dynamic Scene Rendering
+
+来源：[CVPR 2024 论文](https://openaccess.thecvf.com/content/CVPR2024/html/Wu_4D_Gaussian_Splatting_for_Real-Time_Dynamic_Scene_Rendering_CVPR_2024_paper.html) ｜ [arXiv 全文](https://arxiv.org/html/2310.08528) ｜ [官方代码](https://github.com/BruceYounggit/4DGS)
+
+### 基本信息
+
+```text
+年份/会议：CVPR 2024
+所属分类：动态重建 / 时空编码 / 渲染加速
+方法阶段：动态表示 + 时刻条件形变 + 训练与渲染
+对我重要性：★★★★☆
+```
+
+### 解决的问题
+
+动态场景需要同时表示 3D 空间和时间。只用小型 MLP 从位置、时间直接预测复杂形变，表达力有限；为每个时刻显式保存大量属性则存储昂贵。该论文将时空信息放进可查询的多分辨率特征平面，再用轻量解码器产生 Gaussian 的时变形状与运动。
+
+### 核心方法
+
+1. Canonical 3D Gaussians：基础仍是可光栅化的 3D Gaussian；论文标题中的“4D”主要指带时间条件的场景表示，不应误读成每个 primitive 都是完整 4D covariance Gaussian。
+2. Spatial-temporal HexPlane：把 `(x,y,z,t)` 的特征分解到 `xy/xz/yz/xt/yt/zt` 六类 2D plane；多分辨率插值、聚合后取得时空特征。前三个偏空间结构，后三个携带时间变化。
+3. Multi-head deformation decoder：小 MLP 将时空特征解码为位置、旋转、尺度的偏移；当前时刻的 Gaussian 再经普通 splatting 渲染。
+4. 训练中的容量控制：沿 Gaussian 训练过程优化/增减 primitive，但核心创新在时空编码与形变场，不是新的 FastGS 风格多视角 densification score。
+
+### Pipeline
+
+```text
+动态视频 + 相机；初始化 canonical 3D Gaussians
+↓
+查询位置 x 和时间 t 在六组多分辨率特征平面上的特征
+↓
+轻量 MLP 解码 delta-position/rotation/scale
+↓
+变形的 3D Gaussians → rasterizer → 重建损失
+↓
+联合优化 canonical Gaussians、HexPlane 和 decoder
+```
+
+### 关键 score / 公式要记什么
+
+```text
+h(x,t) = Aggregate_l[ Interpolate(xy,xz,yz,xt,yt,zt planes) ]
+(delta_x, delta_r, delta_s) = Decoder(h(x,t))
+G_i(t) = Deform(G_i, delta_x, delta_r, delta_s)
+```
+
+该式仅作理解性示意，原文特征聚合在不同尺度上含插值与乘积，不要把 `Aggregate` 当作论文精确实现公式。与 Deformable 3D Gaussians 相比，两者都有 canonical + deformation；这里多了显式时空平面特征。
+
+### 实验要记
+
+### Ablation 结论
+
+- 去掉 HexPlane、只靠浅层 MLP，在论文合成数据 ablation 中 PSNR 降到 27.05，说明时空特征编码并非纯附加装饰。
+- 去掉位置形变头，PSNR 为 26.67；这个 ablation 是合成数据表，不能拿去解释 Neu3D 的 31.15。
+- 不同数据集使用不同训练配置、初始点云与 plane 分辨率；对比要固定协议。
+
+### 局限
+
+- 多相机同步视频的空间约束强于单目时序；稀疏时间/视角下可能出现相机运动与物体运动纠缠。
+- HexPlane/decoder 引入训练和存储开销；是否比目标动态基线更快要在相同硬件和完整协议下重测。
+- 它不直接解决 FastGS VCD 的候选排序或有限增长名额分配。
+
+## 20. Improving Gaussian Splatting with Localized Points Management
+
+来源：[CVPR 2025 论文](https://openaccess.thecvf.com/content/CVPR2025/html/Yang_Improving_Gaussian_Splatting_with_Localized_Points_Management_CVPR_2025_paper.html) ｜ [arXiv 全文](https://arxiv.org/html/2406.04251) ｜ [官方代码](https://github.com/Surrey-UP-Lab/GS-LPM)
+
+### 基本信息
+
+```text
+年份/会议：CVPR 2025
+所属分类：局部错误定位 / 多视角几何 / D / P
+方法阶段：训练中识别 3D zone → 局部增密/校准 → 控制点数
+对我重要性：★★★★★
+```
+
+### 解决的问题
+
+传统 ADC 平均 Gaussian 的屏幕空间位置梯度，超过阈值才 clone/split；稀疏区域若根本没有 parent 就无从加点。错误高 opacity 点还可能挡住后方正确几何。简单全局降低梯度阈值又会让全场景点数膨胀。LPM 先定位“多视角都支持的渲染错误发生在哪个 3D 区域”，再只在那个区域做点管理。
+
+### 核心方法
+
+1. Paired error regions：比较当前渲染与真值形成误差图，在邻近视角通过 LightGlue 特征匹配找到对应的高误差 2D 区域。不是把单张图的所有高梯度/边缘都当作真实缺失几何。
+2. Error-source 3D zone：将两张图的对应误差区域从各自相机投成锥形射线束，依据其交会得到空间候选，再用包围球概括成局部 zone。这里的“同一 3D 位置有跨视角证据”是关键约束。
+3. Localized point addition：zone 内有 Gaussian 时局部降低 densification 的梯度阈值，补充原 ADC 可能漏掉的点；zone 空缺时论文提出直接补新 Gaussian，以解决“没有 parent 无法 split”。这两种情形不能混成简单候选重排。
+4. Local opacity reset：对 zone 前方可能遮挡该区域、且 opacity 过高的点定点重置透明度，让后续优化重新决定遮挡关系；不是全局重置所有点。
+5. Density-aware pruning：在局部补点后按密度/opacity 控制冗余增长，避免用增点换质量却让点数无限上涨。
+
+### Pipeline
+
+```text
+正常训练、渲染训练视角并形成 error map
+↓
+相邻视角匹配对应的高误差区域
+↓
+2D 误差区域反投影 → 多视角交会 → 3D error zone
+↓
+zone 内有点：局部放宽 densification 阈值，clone/split
+zone 内无点：尝试显式补点
+↓
+重置 zone 前方错误高-opacity 点
+↓
+继续优化，并用 density-aware pruning 抑制点数增长
+```
+
+### 关键 score / 公式要记什么
+
+```text
+原始 ADC：平均 image-space position gradient > 全局阈值 → 加点
+LPM：先确定由跨视角对应误差支持的 3D zone；
+     再在 zone 内放宽阈值 / 补空区点 / 校正前方 opacity。
+```
+
+理解重点：它主要改变“哪里需要操作”和“区域内做什么”，不是提出一个全场统一的新 Gaussian importance score。`error map` 本身只能说明渲染不匹配；跨视角对应与空间交会才提高了几何可信度。
+
+### 实验要记
+
+### Ablation 结论
+
+- Playroom 的 full LPM PSNR 30.22；去掉 point addition 为 30.10，去掉 opacity reset 为 30.07，说明两类操作不等价。
+- Truck 的 full LPM LPIPS 0.154，去掉 reset 后为 0.144（更低），说明局部重置并非每个场景、每个指标都占优。
+- 全局降低梯度阈值会增长更多点；应同时报告点数、训练时间和质量，不能只看 PSNR。
+
+### 局限
+
+- 跨视角特征匹配、误差区域配对及反投影可能在低纹理、透明体、遮挡、运动物体或单目连续帧上失效。
+- 单目视频相邻帧并非“同一时刻的两个相机”；不经运动补偿直接三角化，可能把时间变化错当空间错误。
+- 论文中区域构造和公开实现的局部边界表达不一定完全一致；复现时需逐项核对代码路径。
+- 对 FastGS 的训练时间和固定 densification quota 的兼容性须单独验证。
+
+## 21. Steepest Descent Density Control for Compact 3D Gaussian Splatting (SteepGS)
+
+来源：[CVPR 2025 论文](https://openaccess.thecvf.com/content/CVPR2025/html/Wang_Steepest_Descent_Density_Control_for_Compact_3D_Gaussian_Splatting_CVPR_2025_paper.html)
+
+### 基本信息
+
+```text
+年份/会议：CVPR 2025
+所属分类：训练中增密 / 损失感知 density control / 紧凑表示
+方法阶段：候选统计 → split 决策与方向 → 常规优化
+对我重要性：★★★★☆
+```
+
+### 解决的问题
+
+位置梯度大只说明移动当前 Gaussian 有利，不能说明新增 child 比移动 parent 更有利。传统 ADC 易增长冗余点；SteepGS 研究“是否存在因分裂新自由度而降低损失的局部方向”。
+
+### 核心方法
+
+1. 将 parent/child 的共同位移与 child 相对平均参数的分散位移分开，避免把普通位置更新误认为 split 收益。
+2. 从 Gaussian 响应的损失梯度与响应的二阶导数组合出 splitting matrix；它刻画局部的分裂方向，不是 Gaussian 形状的协方差矩阵。
+3. 若最小特征值为负，局部二阶近似中存在下降的相对分散方向；对应特征向量给出候选方向。论文还分析两个等权、反向 child 的受限理想动作。
+4. 用可累计的每点矩阵估计使训练期判断可计算。公开代码中的 clone/split、opacity 和预算细节不能直接等同于理论最优解。
+
+### Pipeline
+
+```text
+正常渲染与反传 → 累计梯度和 splitting-matrix 统计
+→ density-control event 求最小特征对 → 筛 parent、安排 child
+→ 常规剪枝与后续优化
+```
+
+### 关键 score / 公式要记什么
+
+```text
+lambda_min(S) < 0：局部二阶模型存在有利的相对分裂方向。
+v_min(S)：该局部模型给出的分裂方向。
+S != Gaussian covariance；S != 完整 loss Hessian。
+```
+
+负特征值是局部近似条件，不保证远期测试质量、训练速度或最终 FPS。
+
+### 实验要记
+
+论文 Mip-NeRF 360 表中，3DGS 为 3.339M 点、PSNR 29.037、SSIM 0.872、LPIPS 0.183；SteepGS 为 1.606M 点、28.734、0.857、0.211。支持“明显减点”，但这组质量指标不应写成全面提升。
+
+### Ablation 结论
+
+精读笔记未核到能独立量化矩阵筛选、方向与 opacity 三者贡献的完整模块消融；不能凭整体对比给每一项分配收益。
+
+### 局限
+
+需要额外导数/矩阵统计及实现核对。局部二阶预测与最终 alpha 合成、优化轨迹不等价；接到 FastGS 还需测 event 时间与 renderer 接口成本。
+
+## 22. Faster 3D Gaussian Splatting Convergence via Structure-Aware Densification (SAD-GS)
+
+来源：[SIGGRAPH 2026 项目](https://vcai.mpi-inf.mpg.de/projects/SAD-GS/)
+
+### 基本信息
+
+```text
+年份/会议：SIGGRAPH 2026 Conference Track（不是 CVPR 2026）
+所属分类：结构尺度感知增密 / 短训练收敛
+方法阶段：训练前多尺度图像统计 + 训练中增密
+对我重要性：★★★★★
+```
+
+### 解决的问题
+
+只看位置梯度，可能不断小步 split，却未判断现有 Gaussian 投影尺寸与图像局部细节尺度是否匹配。高频细节所需的细粒度点因而出生较晚，短训练收敛慢。
+
+### 核心方法
+
+1. 对 GT 图像作多尺度结构分析，用图像梯度、尺度能量和结构张量估计局部有效波长。这个量是二维细节尺度代理，不是真实表面法线或深度。
+2. 把 Gaussian 三个局部轴投影到相机图像，分别计算投影轴长与局部波长之比 eta；eta 大表示该轴相对图像细节过粗。
+3. 统计多个有效观测中的高响应比例，以减轻单视角纹理的偶然影响；仍要区分“图像结构支持”与“三维同表面已验证”。
+4. 按每轴 eta 决定细分份数并规则放置 child，同时配套尺度、训练日程等调整。论文方法并非只换一个 score，公开代码与正文某些阈值/统计细节有差异。
+
+### Pipeline
+
+```text
+GT 多尺度结构统计 → 局部细节尺度代理
+→ parent 三轴投影长度 / 细节尺度 = eta
+→ 多观测门控 → 每轴细分数 → child 网格放置与缩放
+→ 继续训练、剪枝
+```
+
+### 关键 score / 公式要记什么
+
+```text
+eta_k = 第 k 条 Gaussian 投影轴长（像素）/ 局部细节尺度（像素）
+n_k = ceil(sqrt(eta_k))（论文相关设置；实现需核版本）
+```
+
+`eta` 是尺度不匹配信号，不等于 residual、重要性或必须 split 的充分条件；`n_k` 增大还会直接增加点数。
+
+### 实验要记
+
+Mip-NeRF 360 表中 FastGS-Base 为 143.7 s、PSNR 27.55、SSIM 0.797、LPIPS 0.261、0.40M 点；SAD-GS 为 52.96 s、27.25、0.821、0.197、4.05M 点。短训练/感知指标有优势，但点数大幅增加且 PSNR 更低；不是直接紧凑化或纯渲染加速结论。两行还涉及训练日程等差别，不能当作 FastGS 上单一模块消融。
+
+### Ablation 结论
+
+阅读正文与补充材料的结构分析、观测门控、分裂设置及同点数比较；整体收益还混有增长剂量和训练配置，单靠主表无法归因。记录质量时必须并列点数、时间与显存/FPS。
+
+### 局限
+
+二维高频可来自纹理/噪声，不保证是三维缺容量；child 数量可能膨胀。动态物体的跨时观测还需要先验证表面对应。
+
+## 23. GS²: Graph-based Spatial Distribution Optimization for Compact 3D Gaussian Splatting
+
+来源：[CVPR 2026 论文](https://openaccess.thecvf.com/content/CVPR2026/html/Yang_GS2_Graph-based_Spatial_Distribution_Optimization_for_Compact_3D_Gaussian_Splatting_CVPR_2026_paper.html)
+
+### 基本信息
+
+```text
+年份/会议：CVPR 2026
+所属分类：紧凑表示 / 场景级停止增密 / 渐进剪枝 / 恢复
+方法阶段：增密停止 → opacity 剪枝 → 剪后空间优化
+对我重要性：★★★☆
+```
+
+### 解决的问题
+
+继续增密并不总能改善收益；激进剪枝后，保留点的空间覆盖和邻域关系也会被破坏。只 fine-tune 原有属性可能难恢复结构。
+
+### 核心方法
+
+1. 用 ELBO-inspired 的拟合误差与复杂度代理监测训练，以 EMA/窗口变化判定何时停止增长；这是场景级时机判据，不是逐 Gaussian 的剪枝分数。
+2. 加 opacity 正则，周期性删低 opacity 点，逐步收紧容量。
+3. 论文提出剪后 GSDO：坐标嵌入、特征邻域与残差聚合，再用质心对齐和局部平滑损失配合 photometric loss 调整剩余点的空间分布。
+4. 公开仓库未找到论文完整图编码器与两项空间损失；README 的位置学习率提高是轻量近似，不能当成完整 GSDO 复现。
+
+### Pipeline
+
+```text
+正常增密 + 场景级监测 → 停止增长
+→ opacity 正则与渐进剪枝 → 固定点集的图空间恢复（论文方法）
+→ 联合光度优化
+```
+
+### 关键 score / 公式要记什么
+
+```text
+ELBO-inspired 监测量 = 重建误差 + 复杂度代理；
+EMA/窗口近乎停滞 → 停止 densification（不是 parent 排名）。
+图空间损失约束保留点的整体分布与局部关系（不是 newborn placement）。
+```
+
+### 实验要记
+
+Mip-NeRF 360 中，GS² 最终约 0.30M 点，相比 3DGS 约 3.12M；PSNR 27.74 对 27.71，但 SSIM 0.82 对 0.83、LPIPS 0.23 对 0.20。支持大幅减点和 PSNR 接近，不支持全质量指标提升。
+
+### Ablation 结论
+
+Mip 逐步消融中，单加 opacity pruning 后 PSNR 从 ELBO 阶段的 27.73 降至 26.79；后续恢复逐步回到 full model 27.74。恢复阶段是抵消压缩损失的重要部分，不能只复制剪枝比例。
+
+### 局限
+
+完整 GSDO 的公开实现缺口限制直接复现；额外恢复阶段增加训练成本。图邻域也不自动等于同物理表面。
+
+## 24. Plug-and-Play PDE Optimization for 3D Gaussian Splatting (PDEO)
+
+来源：[CVPR 2026 论文](https://openaccess.thecvf.com/content/CVPR2026/html/Mo_Plug-and-Play_PDE_Optimization_for_3D_Gaussian_Splatting_Toward_High-Quality_Rendering_CVPR_2026_paper.html)
+
+### 基本信息
+
+```text
+年份/会议：CVPR 2026
+所属分类：位置优化 / 邻域协调 / 增密门控
+方法阶段：训练迭代更新位置 + densification event
+对我重要性：★★★☆
+```
+
+### 解决的问题
+
+小 Gaussian 对位置更新敏感，单点梯度可能使点漂移或形成 floater；仅调整加点阈值未必解决优化轨迹不稳定。PDEO 从更新方向的局部协调出发。
+
+### 核心方法
+
+1. 将 Gaussian 的位置更新看作粒子运动，引入具有黏性的局部速度场。这里的“速度”是优化更新量，不是视频物体运动。
+2. P2G：把局部粒子的更新聚合到网格，结合历史场的 EMA；G2P：再把网格方向与单点更新混合，修正位置优化。
+3. 对过大尺度施加尺度损失，用 confidence/opacity 损失鼓励属性更明确；这些是参数约束，不是 child placement。
+4. 在 densification 中用单点与网格更新方向的一致性作辅助门控。方向一致仍不能证明某处缺容量。
+
+### Pipeline
+
+```text
+正常渲染反传 → 粒子候选更新 → P2G 局部聚合/历史 EMA
+→ G2P 修正位置 → 参数约束与优化
+→ 到 event 时检查方向一致性 → 后续增密/剪枝
+```
+
+### 关键 score / 公式要记什么
+
+```text
+grid_new = lambda_g * grid_old + (1-lambda_g) * mean(local_updates)
+particle_new = lambda_p * own_update + (1-lambda_p) * grid_new
+```
+
+两个 lambda 分别是网格历史权重与单点更新权重；不能和 FastGS Compact Box 的 beta 或剪枝率混淆。
+
+### 实验要记
+
+精读笔记记录的补充时间：3DGS 33.7 → 38.1 分钟，说明在该组合下训练反而更慢；其他基础方法有缩时案例。质量、显存与 FPS 也需逐指标比较，不能概括成对任意 FastGS 即插即用加速。
+
+### Ablation 结论
+
+笔记核对的 GES 增密消融中，PSNR 贡献约 0.03 dB；整体收益不能都归因于方向门控。移除模块的消融不等于“只加该模块”的独立实验。
+
+### 局限
+
+公开训练实现尚不足以直接核对所有更新接口；网格融合、角度阈值与 optimizer 时序存在复现疑点。FastGS 的短训练中，额外聚合成本尤其需要计入。
+
+## 25. EDGS: Eliminating Densification for Efficient Convergence of 3DGS
+
+来源：[CVPR 2026 论文](https://openaccess.thecvf.com/content/CVPR2026/html/Kotovenko_EDGS_Eliminating_Densification_for_Efficient_Convergence_of_3DGS_CVPR_2026_paper.html)
+
+### 基本信息
+
+```text
+年份/会议：CVPR 2026
+所属分类：多视角几何初始化 / 容量预分配 / 收敛效率
+方法阶段：训练前初始化；主设置训练中不 densify，但仍 prune
+对我重要性：★★★★☆
+```
+
+### 解决的问题
+
+稀疏 SfM 初始点对表面覆盖不足，训练需花时间通过多轮 clone/split 补齐几何。EDGS 把一部分“哪里该有点”的工作提前到初始化。
+
+### 核心方法
+
+1. 在已知相机的训练图像间做密集对应匹配，结合置信度和双视角三角化产生候选 3D 点。
+2. 用重投影误差过滤不可靠候选，并做覆盖/采样控制，避免大量点扎堆在高纹理区。
+3. 初始化位置、颜色、尺度及多视角 SH；随后主要作光度优化与剪枝，不再依靠训练中 densification。
+4. “无需 densification”不代表没有预处理成本、没有剪枝或从单图直接得到唯一正确几何。
+
+### Pipeline
+
+```text
+多视角图像 + 相机 → 密集匹配与置信度
+→ 三角化/重投影检查 → 覆盖感知选点
+→ Gaussian 位置、尺度、颜色、SH 初始化
+→ 常规优化 + pruning（主设置无 clone/split）
+```
+
+### 关键 score / 公式要记什么
+
+```text
+reprojection error：3D 候选投回两张图，与原对应像素的距离。
+SH init：用多视角观测拟合方向颜色系数，而不是训练后 SH 压缩。
+```
+
+### 实验要记
+
+Mip-NeRF 360、30K 口径中，论文 3DGS* 为 PSNR 27.49、SSIM 0.816、LPIPS 0.215、26 min、2.8M 点；EDGS 为 28.02、0.839、0.141、27 min、1.9M 点。质量及点数更好，但此设置总时间并未比该 3DGS* 更短。5K/10K 的短训练表现应单独看，不能混用预算。
+
+### Ablation 结论
+
+采样和 SH 初始化分别被消融；SH 初始化的单项对照 PSNR +0.22、LPIPS -0.034，但 SSIM 略降。固定初始点数的采样比较更接近“点放在哪里”的检验。
+
+### 局限
+
+密集匹配和三角化依赖相机、纹理、基线及预处理资源；单目视频若含运动物体，跨时匹配不能直接当同步多视角。与 FastGS 比较须把初始化耗时计入端到端时间。
+
+## 26. VAD-GS: Visibility-Aware Densification for 3D Gaussian Splatting in Dynamic Urban Scenes
+
+来源：[CVPR 2026 论文](https://openaccess.thecvf.com/content/CVPR2026/html/Zhang_VAD-GS_Visibility-Aware_Densification_for_3D_Gaussian_Splatting_in_Dynamic_Urban_CVPR_2026_paper.html)
+
+### 基本信息
+
+```text
+年份/会议：CVPR 2026
+所属分类：动态城市场景 / 可见性推理 / 几何补点
+方法阶段：训练中诊断空缺 → 多视角 MVS → 新点与几何约束
+对我重要性：★★★★☆
+```
+
+### 解决的问题
+
+稀疏初始化留下真实表面空缺时，背景 Gaussian 可能错误吸收本应由前景承担的图像误差。继续对已有 parent 作梯度 clone/split，未必能把点放到缺失表面。
+
+### 核心方法
+
+1. 将点与观测来源组织成体素，用深度、z-buffer 和可见性线索发现不可靠区域；不是仅统计 radii > 0 的视角数。
+2. 对候选区域选择共同可见且具有几何多样性的支持视角，避免把一串几乎重复的相邻帧当强证据。
+3. 用 PatchMatch MVS 估计深度/法线并做跨视角过滤；经反投影直接生成新 Gaussian，这条出生路径可绕开“必须有 parent”。
+4. 动态刚体在对象局部坐标中做运动补偿，结合实例 mask；之后继续几何/光度优化和原有增密剪枝。
+
+### Pipeline
+
+```text
+点云/相机/实例观测 → 体素可见性诊断
+→ 选共同可见且有基线的视角 → MVS 深度/法线
+→ 一致性过滤 → 反投影新增点 → 几何约束 + 原有训练
+```
+
+### 关键 score / 公式要记什么
+
+```text
+视角选择同时考虑距离、相对平移和视线方向差；
+深度 z 与相机内参 K 给出 X = z K^-1 p。
+```
+
+“多视角看到”仍不等于“同一物理表面”；动态数据须先做运动补偿与遮挡检查。
+
+### 实验要记
+
+Waymo 相对 StreetGaussians：整体 PSNR +0.98 dB、动态 PSNR +1.08 dB、SSIM +0.012、LPIPS -0.032。nuScenes 中 SSIM 六场景改善，但相对 StreetGaussians 的 LPIPS 五场景更差、一场景相同；通常点数更多，不是压缩结论。
+
+### Ablation 结论
+
+去掉几何 loss 的设置在部分整体 PSNR/LPIPS 略好，却损失动态 PSNR 与几何表现；几何约束的价值不能只用单个图像指标判断。
+
+### 局限
+
+依赖可靠相机、实例分割、刚体运动和足够视差；非刚体、玻璃、低纹理及遮挡会影响几何证据。公开 dev 代码与正式论文有版本差异。
+
+## 27. RAP: Fast Feedforward Rendering-Free Attribute-Guided Primitive Importance Score Prediction
+
+来源：[CVPR 2026 论文](https://openaccess.thecvf.com/content/CVPR2026/html/Yang_RAP_Fast_Feedforward_Rendering-Free_Attribute-Guided_Primitive_Importance_Score_Prediction_for_CVPR_2026_paper.html)
+
+### 基本信息
+
+```text
+年份/会议：CVPR 2026
+所属分类：学习式重要性评分 / 剪枝 / 压缩前处理
+方法阶段：离线训练评分器；部署时属性特征 → 排序剪枝
+对我重要性：★★★☆
+```
+
+### 解决的问题
+
+精细的 Gaussian importance 通常需要多视角渲染统计；简单 opacity 排序便宜却忽略属性和邻域。RAP 学可复用的前馈评分器，降低新场景部署时计算重要性的开销。
+
+### 核心方法
+
+1. 从尺度、体积、opacity、DC 颜色、方向颜色变化及 KNN 距离等属性提取原始特征，并计算全局/局部统计，形成每点 15 维输入。
+2. 先作分位数裁剪与归一化，再由小 MLP 输出 importance。它预测评分，不从照片预测场景 Gaussian，也不直接决定 child 放置。
+3. 训练评分器时用分数软缩放 opacity/scale，通过渲染保真、目标平均分和分数直方图熵约束学习；部署时不做逐视角渲染评分，但仍需 KNN/特征计算。
+4. 外部按照目标预算或阈值用分数剪枝。平均分目标不等于严格固定的保留比例，分数也不是“删除后可恢复性”的真值。
+
+### Pipeline
+
+```text
+离线：多场景 Gaussian 属性 → 特征 → MLP → 软门控渲染监督
+部署：已训练场景 Gaussian → KNN/属性特征 → MLP 分数
+→ 按预算排序剪枝 → 可选后续编码/优化
+```
+
+### 关键 score / 公式要记什么
+
+```text
+每点 7 个全局 + 8 个局部统计 = 15 维；
+MLP: 15 → 32 → 32 → 16 → importance。
+```
+
+“rendering-free”限定部署时评分，不包括评分器训练。若比 exact Light-T 速度，必须连 KNN、特征提取和加载一起计时。
+
+### 实验要记
+
+论文报告直接剪枝的质量-存储权衡和周期剪枝结果，并非所有场景/指标第一；与 vanilla 比较的四组周期剪枝 LPIPS 均变差。补充材料中评分用时依场景组约 5.72–15.64 s，MLP 前向只占很小部分，主要成本在邻域特征；不能把评分加速写成整个 FastGS 训练或 FPS 加速。
+
+### Ablation 结论
+
+特征与损失消融支持整体评分设计，但不证明任一特征对应某点的因果可恢复性。公开代码只覆盖预训练模型的评分/剪枝组件，完整训练实现未全公开。
+
+### 局限
+
+域迁移、局部 KNN 成本、公开实现与正文特征细节差异均需核查；高压缩及 recovery 场景的排名边界是否稳定，不能由普通剪枝曲线直接推出。
+
+## 28. ResGS: Residual Densification of 3D Gaussian for Efficient Detail Recovery
+
+来源：[ICCV 2025 论文](https://arxiv.org/html/2412.07494) ｜ [官方代码](https://github.com/yanzhelyu/ResGS)
+
+### 基本信息
+
+```text
+年份/会议：ICCV 2025
+所属分类：Residual Split / 粗细层级增密 / 分辨率日程
+方法阶段：训练中 parent-child 动作、监督分辨率和门槛
+对我重要性：★★★★☆
+```
+
+### 解决的问题
+
+原生 clone 保留覆盖却常复制同样粗的点；原生 split 用更小 child 替换大 parent，可能立即破坏已有覆盖。论文希望大点负责低频覆盖、小点补细节，并使训练从粗到细推进。这里的 residual 指表示分工，不是 child 显式拟合一张 RGB 残差图。
+
+### 核心方法
+
+1. **Residual Split：**在已选中的 parent 椭球内随机采样一个小 child，`s_child=s_parent/1.6`；child 继承原 opacity、旋转和颜色。保留 parent 的位置与尺度，把 parent opacity 乘 `0.3`。原生“删 1 加 2”和这里“留 1 加 1”的名义净增长都为 `+1`，但大 parent 留下可能增加 tile workload。
+2. **Image Pyramid：**训练监督分辨率逐层提高。早期先学整体覆盖，后期再要求高频细节；这同时改变像素计算量和屏幕梯度，不只是换图像尺寸。
+3. **Varying Gradient Threshold：**为点记录生成层级，训练推进时降低较老层级的增密门槛，使粗层级更易继续产生细点。层级是生成历史，不等于优化后的真实尺度。
+
+### Pipeline
+
+```text
+SfM 初始化 → 当前分辨率渲染/反传 → 按层级门槛选 parent
+→ 保留并弱化 parent、采样小 child → 更新点集合/优化器
+→ 提高监督分辨率、继续优化和清理
+```
+
+### 关键 score / 公式要记什么
+
+```text
+mu_child ~ N(mu_parent, Sigma_parent),  s_child = s_parent / lambda_s
+o_child = o_parent_before,             o_parent_after = beta * o_parent_before
+lambda_s = 1.6, beta = 0.3（所查论文/官方函数配置）
+```
+
+两点 opacity 不可直接相加推断最终像素不透明度；投影、空间衰减、遮挡和 alpha blending 都会改变结果。
+
+### 实验要记
+
+论文 Mip-NeRF 360 表 3：AbsGS `27.49/0.820/0.191/728 MB`，只加 residual split 后 `27.71/0.827/0.185/712 MB`（PSNR/SSIM/LPIPS/存储）。这是论文体系的模块结果，不是 FastGS 中同容量收益。
+
+### Ablation 结论
+
+动作、金字塔、变化门槛需要分开看；完整方法的结果不能全记给 split。standard 版本并非训练时间/FPS 全面优于 AbsGS。
+
+### 局限
+
+## 29. Revising Densification in Gaussian Splatting
+
+来源：[ECCV 2024 论文](https://www.ecva.net/papers/eccv_2024/papers_ECCV/html/8041_ECCV_2024_paper.php) ｜ [正文及附录](https://arxiv.org/html/2404.06109)
+
+### 基本信息
+
+```text
+年份/会议：ECCV 2024
+所属分类：训练期误差归因 / clone opacity 修正 / 增长控制
+方法阶段：渲染统计 → ADC event → clone/split → opacity 管理
+对我重要性：★★★★☆
+```
+
+### 解决的问题
+
+位置梯度不等于当前像素误差，也不等于新增容量的收益；复制 clone 还会突然提高覆盖处的不透明度。若不限制增长，误差驱动的增密可迅速膨胀。
+
+### 核心方法
+
+1. **Error-Based Densification：**由 GT 与当前渲染的像素误差，经 `alpha * transmittance` 混色权重归因给参与该像素的 Gaussian；在 ADC 统计窗口的视角间取 max。高归因不是“错误由此点造成”的因果证明。论文用数值为零的辅助标量在 backward 中读取归因梯度，而不是训练一个重要性 MLP。
+2. **Opacity Correction：**只对重合 clone 的 parent/child 同时设 `o_hat=1-sqrt(1-o)`，使中心处二者合成的透射率与旧 parent 相同；远离中心和 split 时不精确守恒。
+3. **Growth Control：**全局容量上限和每事件增长限制，候选超额时按分数选。论文所述设置每次最多增长当前规模的 5%；预算约束不保证排序正确。
+4. **平滑 opacity 控制：**用温和衰减替代硬 reset，并用残余透射率项约束背景泄漏；不应脱离场景背景设定照搬。
+
+### Pipeline
+
+```text
+训练图像渲染/反传 → 累积像素误差的混色权重归因
+→ event 按分数和容量选点 → clone/split
+→ 对 clone 对称修正 opacity → 平滑衰减、清理、继续训练
+```
+
+### 关键 score / 公式要记什么
+
+```text
+w_i(p) = alpha_i(p) * T_i(p)
+E_i = max_v sum_p [pixel_error_v(p) * w_i^v(p)]
+(1-o_hat)^2 = 1-o  =>  o_hat = 1-sqrt(1-o)
+```
+
+`o=0.6` 时未经修正的重合 clone 中心合成 opacity 为 `0.84`；对称修正后各约 `0.3675`，中心合成回 `0.6`。
+
+### 实验要记
+
+论文五次训练统计：Mip-NeRF 360 的 3DGS/本文 PSNR `27.45/27.61`，T&T `23.44/23.93`，Deep Blending `29.54/29.50`。训练日程及容量口径不同，不能当作只换 score 的同条件结果。
+
+### Ablation 结论
+
+Mip 表 4 中 baseline 加 opacity correction 的 PSNR `27.65`（baseline `27.45`）；完整方法去掉它为 `27.04`。这说明该模块在论文设置中值得研究，但完整体系的消融差异不能线性加到 FastGS 上。
+
+### 局限
+
+跨视角 max 易受异常视角影响；误差归因不是 split 收益真值；clone 中心校正不是全图守恒。FastGS 已有 VCD/VCP 与不同 reset、候选分布，论文消融不预言这里也有 `+0.2 dB`。
+
+## 30. Pixel-GS: Density Control with Pixel-aware Gradient for 3D Gaussian Splatting
+
+来源：[ECCV 2024 论文](https://arxiv.org/html/2403.15530) ｜ [官方项目](https://pixelgs.github.io/)
+
+### 基本信息
+
+```text
+年份/会议：ECCV 2024
+所属分类：像素参与量加权 / 跨视角梯度统计 / 深度缩放
+方法阶段：训练迭代统计 → ADC event 选点
+对我重要性：★★★☆
+```
+
+### 解决的问题
+
+普通跨视角平均把一个 Gaussian 在大面积有效像素中参与的观测，与仅覆盖少量像素的观测近似等权处理；但直接强调大面积又会奖励近相机浮点。
+
+### 核心方法
+
+1. **Pixel-Aware Gradient：**统计 Gaussian 在各训练视角真正参与渲染的像素数 `m_iv`，用它加权该视角位置梯度幅值，再除以总参与像素数。它不是 2D 椭圆面积或高残差像素数。
+2. **Scaled Gradient Field：**用相机深度与场景半径构造 `f_iv`，压低近相机大投影点的增长倾向；保留远点权重上限 1。深度缩放后的分母仍是 `sum m_iv`，不能同时缩放分母把抑制效果抵消。
+3. **后续 ADC：**超过门槛后仍按尺度 clone/split；本文不是 child 放置或 pruning 方法。
+
+### Pipeline
+
+```text
+渲染/反传 → 每点每视角梯度、有效像素数、相机深度
+→ 深度缩放 + 像素加权聚合 → event 判断 clone/split
+→ 原生参数优化与清理
+```
+
+### 关键 score / 公式要记什么
+
+```text
+g_pixel_i = sum_v(m_iv * g_iv) / sum_v(m_iv)
+f_iv = clip((z_iv / (gamma_depth * r))^2, 0, 1)
+g_final_i = sum_v(m_iv * f_iv * g_iv) / sum_v(m_iv)
+```
+
+`g_iv` 是屏幕位置梯度幅值，不是 RGB 残差；`z_iv` 是相机深度，不是单目预测深度。分母为零时不能执行该统计。
+
+### 实验要记
+
+论文 Mip-NeRF 360：作者重训 3DGS 为 `27.71/0.826/0.202`，Pixel-GS 为 `27.88/0.834/0.176`（PSNR/SSIM/LPIPS）。但效率表中其训练更慢、FPS 更低，不能写成 FastGS 式训练加速。
+
+### Ablation 结论
+
+T&T 表 3 仅像素加权 PSNR `21.80`，完整方法 `24.38`；深度缩放是重要配套。主表和消融表 baseline 存在数值口径差异，不能自行拼接。
+
+### 局限
+
+参与像素多不等于真实表面需要点；近处真实细节也可能被深度缩放抑制。增加逐像素统计可能损害 FastGS 的短训练开销。
+
+## 31. Efficient Confidence-Aware Densification for 3DGS
+
+来源：[arXiv v1 正文与补充材料](https://arxiv.org/html/2610.13541v1)
+
+### 基本信息
+
+```text
+年份/会议：2026-10 arXiv 预印本；正式录用未核实
+所属分类：固定容量 3DGS-MCMC / 学习式置信度 / 点迁移
+方法阶段：训练中源点选择、低贡献点回收与新点初始化
+对我重要性：★★★☆
+```
+
+### 解决的问题
+
+### 核心方法
+
+1. **Learned Confidence：**逐 Gaussian 学正值 confidence，再按 alpha blending 得到像素 confidence；用像素误差和 `-log(confidence)` 共同约束。低 confidence 表示模型拟合不充分，不是几何错误的校准概率。
+2. **分支式源点采样：**约 80% 来源于绝对梯度 rank 与 confidence rank 的组合，随训练逐渐增强 confidence 影响；约 20% 走 SSIM 结构误差归因分支。两分支是分别抽样，不等于两个分数简单线性相加。
+3. **Maximum Blending Weight Relocation：**用统计窗口内每点最大的 `alpha*T` 寻找低贡献旧点并迁移，为需求位置腾容量；这是窗口 max，不是累计贡献或 opacity 阈值。新迁移点有短期保护。
+4. **出生状态：**新点位置只在出生时采样一次；条件满足时利用训练视角 GT 修正 SH 的 DC 颜色项，并保留高阶 SH。
+
+### Pipeline
+
+```text
+固定容量训练并渲染 confidence → 累积梯度/结构误差/最大混色权重
+→ 分支抽取源点，同时选低贡献迁移对象
+→ 回收名额并在需求处出生 → 初始化位置与 DC 颜色
+→ 保护新点、继续优化
+```
+
+### 关键 score / 公式要记什么
+
+```text
+L_conf(p) = E(p) * C_hat(p) - beta * log(C_hat(p))
+固定 E>0 的单像素标量最优：C_hat* = beta / E
+w_i = max_(view,pixel) [alpha_i(pixel) * T_i(pixel)]
+```
+
+`C_hat*` 只是固定误差的局部数学解释；在混合渲染与参数耦合中不能当逐点真值。源点与迁移对象是两种不同角色。
+
+### 实验要记
+
+论文 Mip-NeRF 360 的 500k 容量消融：3DGS-MCMC `27.30/0.797/0.260`，完整方法 `27.84/0.819/0.231`；分别为 PSNR/SSIM/LPIPS。训练预算与表示机制均非 FastGS。
+
+### Ablation 结论
+
+去掉颜色初始化为 `27.68/0.816/0.236`，去掉位置采样为 `26.96/0.788/0.262`。只替换 sampling 或 relocation 的改善远弱于整套协同；不能把完整收益全部分配给一个 confidence 分数。
+
+### 局限
+
+额外 confidence 渲染、KNN/统计与回收策略都要计时；max 受视角采样影响。低拟合 confidence 不等于 G2 的 depth/normal reliability；固定预算迁移也非 FastGS 原生 VCP。
+
+## 32. SeG-Gaussian: Segmentation-Guided 3D Gaussian Optimization for Novel View Synthesis
+
+来源：[IEEE TVCG 2025 正文](https://iccvm.org/2026/files/papers/ps1_4.pdf) ｜ [作者实现入口](https://github.com/IGLICT/JGaussian)
+
+### 基本信息
+
+```text
+年份/会议：IEEE TVCG 31(12), 2025；不是 CVPR 2026
+所属分类：分割区域引导增密 / 局部空间正则
+方法阶段：训练中区域选点，后半程 KNN/PCA 几何优化
+对我重要性：★★★★☆
+```
+
+### 解决的问题
+
+仅在少数视角出现的细小区域可能有明显重建误差，却难以靠全局梯度累计越过增密门槛。增点后还可能扎堆或漂浮。分割区域提供**局部比较单元**，不是可靠的三维物体识别结果。
+
+### 核心方法
+
+1. **Segmentation-Guided Densification：**Semantic-SAM 为训练 RGB 生成多层 mask；计算每个 mask 的平均 L1，并与本图全图平均 L1 比较。只在高误差 mask 内，选择该区域像素上最大 `T*alpha` 超过门槛的 Gaussian，交给额外增密。它不是把 mask 内所有点都 split。
+2. **局部切平面排斥：**用 Gaussian 中心 KNN 的 PCA 估局部切向基，意图约束点在面内的分布。正文负指数排斥项按字面单独最小化时符号似乎鼓励靠近；未核对代码梯度前不能把“数学上必然排斥”当定论。
+3. **法向平滑：**惩罚邻居中心在局部估计法线方向的间距，抑制点偏离当前估计表面；若整片点都落在错误表面，此项仍可能很小。
+
+### Pipeline
+
+```text
+训练图像预生成区域 mask → 渲染 RGB 和每点 alpha 贡献
+→ 区域平均误差高于全图 → 找区域内高贡献 Gaussian
+→ 额外 clone/split → 后半程 KNN/PCA 排斥和平滑 → 继续训练
+```
+
+### 关键 score / 公式要记什么
+
+```text
+L_mask = 区域内像素 L1 均值；L_image = 全图像素 L1 均值
+w_j(mask) = max_(pixel in mask) [T_j(pixel) * alpha_j(pixel)]
+触发门：L_mask > L_image 且 w_j(mask) > 0.5（论文设置）
+```
+
+第一个门问区域是否相对难拟合，第二个门问该 Gaussian 是否真正参与区域渲染；高误差仍可能来自位姿、反光或遮挡，而非缺点。
+
+### 实验要记
+
+论文比较真实场景和 Blender，并做有限可见视角实验。Semantic-SAM 与固定图块/SLICO/SAM 等 mask 对照中，非语义图块也有作用；训练成本增加，Bicycle 在 RTX 3090 上约 40 分钟，而论文给出的原始 3DGS 约 25 分钟。
+
+### Ablation 结论
+
+mask 类型消融说明区域划分精度有影响，不能说收益全来自“识别物体”。固定容量实验支持局部容量分配，但同上限不等于同最终点数或训练耗时；排斥/平滑的精确独立数值需核原表及实现。
+
+### 局限
+
+mask 是二维区域，不保证跨视角同一物理表面；max 贡献可由个别像素主导；KNN/PCA 对薄物体和错误邻域敏感。正文误差定义与公开 README 片段、排斥项符号均有待代码级核验。
+
+## 33. GeoTexDensifier: Geometry-Texture-Aware Densification for High-Quality Photorealistic 3D Gaussian Splatting
+
+来源：[arXiv v2 正文](https://arxiv.org/html/2412.16809v2)
+
+### 基本信息
+
+```text
+年份/会议：arXiv 2412.16809 v2；正式会议状态未核实
+所属分类：纹理感知额外 split / 单目深度比校验 / 法线引导 child
+方法阶段：训练中候选扩展、parent/child 过滤、位置修正
+对我重要性：★★★★☆
+```
+
+### 解决的问题
+
+仅用“一个 Gaussian 在多少像素上贡献最大”找模糊大点，会把无纹理墙面与细纹理区域混为一谈；随机 split child 又可能离开表面，弱纹理处后续难以纠正。
+
+### 核心方法
+
+1. **Texture-Aware Densification：**为训练图像像素计算纹理梯度权重；只对 Gaussian 是最大贡献者的像素累积权重，得到纹理加权的最大贡献面积，随训练降低额外 split 阈值。它补充原生 ADC，不是直接替换 FastGS VCD。
+2. **VDRC：**为 Gaussian 选贡献最大的参考训练视角，比对单目预测深度与 Gaussian 相机深度的比值；先检 parent 的比值漂移，再检 child 相对 parent 的变化。比值试图抵消部分尺度差，但不能提供真值深度。
+3. **Normal-Guided Placement：**先随机生成 child 候选，再用估计法线投到 parent 附近的切平面，并按图像纹理调整投影与原始位置的混合。它改 child 出生位置，不是 G2 的 parent score。
+
+### Pipeline
+
+```text
+原生训练/ADC + 纹理加权贡献面积找额外 split parent
+→ 参考视角与 parent 深度比检查 → 随机 child 候选
+→ 法线/纹理引导位置 → child 深度比检查或回退 parent
+→ 继续常规优化
+```
+
+### 关键 score / 公式要记什么
+
+```text
+S_hat_i = sum_(winner pixels p) texture_weight(p)
+R_v(G) = D_mono(proj_v(mu_G)) / Z_v(G)
+P_v(parent,child) = |R_v(parent)-R_v(child)| / R_v(parent)
+```
+
+论文纹理权重式按字面在零梯度处也接近 1，深度比阈值的正文两处叙述方向相反，位置混合式的二维图像梯度与三维向量乘法定义不完整；**未核官方实现前不要自行修正公式并称为作者实现**。
+
+### 实验要记
+
+主表中 Truck 原始 3DGS/本文 PSNR `23.157/23.199`，Train `21.269/21.264`，并非两场景都提升。Bonsai 的论文设置下训练比 Mini-Splatting-D 更慢、显存更低、FPS 更高；不等于 FastGS 短训练收益。
+
+### Ablation 结论
+
+Mip 九场景表中 Only Tex PSNR 简单平均约 `27.596`，Tex+VDRC 约 `27.594`，Tex+Normal 约 `27.632`，Full 约 `27.694`。VDRC 单独接在 Tex 后的平均 PSNR 没显著正向信号；组合结果不能反推每一模块独立有效。
+
+### 局限
+
+单目深度与法线在遮挡、反光、远背景和薄结构处不可靠；过滤 child 会改变最终点数。论文 Horse/Truck 的远背景失败例提示：过强深度比门可能误杀必需的 child。
+
+## 34. IndoorGS: Geometric Cues Guided Gaussian Splatting for Indoor Scene Reconstruction
+
+来源：[CVPR 2025 正文](https://openaccess.thecvf.com/content/CVPR2025/papers/Ruan_IndoorGS_Geometric_Cues_Guided_Gaussian_Splatting_for_Indoor_Scene_Reconstruction_CVPR_2025_paper.pdf) ｜ [补充材料](https://openaccess.thecvf.com/content/CVPR2025/supplemental/Ruan_IndoorGS_Geometric_Cues_CVPR_2025_supplemental.pdf)
+
+### 基本信息
+
+```text
+年份/会议：CVPR 2025
+所属分类：室内几何初始化 / 来源分流 ADC / 几何监督
+方法阶段：训练前线索生成 → 训练中优化、增密与剪枝
+对我重要性：★★★★☆
+```
+
+### 解决的问题
+
+室内白墙等弱纹理区域缺 SfM 种子，错误点又可能在 ADC 中被放大。纯 RGB 监督能解释照片的几何解不唯一；只改变 child 方向不足以概括这篇完整方法。
+
+### 核心方法
+
+1. **三类线索初始化：**RGB 与预测法线图提取 2D 线并跨视角匹配成 3D 线点 `G_L`；对 SfM 点做空间离群过滤得 `G_M`；用 SAM 弱纹理区域、Metric3D 深度和稀疏线/SfM 深度对齐补平面状点 `G_S`。类型按来源而非物体语义，child 继承类型。
+2. **来源分流 ADC：**线点重点在切平面增密；SfM 点按训练阶段暂停/恢复常规 ADC；平面状点可能有深度偏移和重复，因此不 clone/split，但仍优化、剪枝。
+3. **线点法线与 child 位置：**只对线来源点加最短尺度变扁损失，并用单目法线约束渲染法线；旋转后的最短轴才作为局部法线近似。split 将随机局部偏移的最短轴分量置零；clone 的意图是从三维位移中去掉法向分量。正文式 (11) 存在向量/标量书写歧义，规范投影只是解释式，未核官方代码。
+4. **几何损失：**训练时结合 RGB、局部深度相关性、单目法线、变扁和渲染深度/法线一致性。§3.2 的逐 Gaussian 局部平面深度/法线 alpha 合成，不等于简单把最短轴着色，也不等于 alpha 加权中心深度反推法线。
+
+### Pipeline
+
+```text
+多视角 RGB/相机 → 线/SfM/平面状 3D 线索 → 分型初始化
+→ 渲染 RGB、深度、法线并优化损失
+→ 按来源决定 ADC；线点切平面 clone/split
+→ 继续几何约束、参数优化及剪枝 → 新视角和几何评估
+```
+
+### 关键 score / 公式要记什么
+
+```text
+n_flat = R * onehot(argmin(s_1,s_2,s_3))
+v_tangent = v - (v dot n_flat) * n_flat（几何解释式）
+split：在 parent 局部坐标采随机偏移，再将最短轴分量设为 0
+```
+
+切平面限制 child **出生位移**，不证明 parent 已在真表面，也不保证 child 后续优化不会漂。最短轴方向若错，投影可能删除正确的切向位移。
+
+### 实验要记
+
+论文在 Replica、ScanNet++、Deep Blending 等室内数据上评价新视角渲染及几何；总体提升混合了初始化、ADC 与多个几何损失，不能归因于切向 split 单模块。完整设置和数字详见独立精读笔记的实验/消融段。
+
+### Ablation 结论
+
+应区分移除线索、改变 ADC 与去掉几何损失的对照。正文表格勾选有提取疑点，尚不能从整体表值推导任一模块对 FastGS 的 PSNR 增幅。论文自身也未验证“任意未扁平化 FastGS Gaussian 的最短轴都是真法线”。
+
+### 局限
+
+线匹配、单目深度/法线和弱纹理区域判断都可能错误；三类来源带来额外预处理成本，且论文面向室内结构。线处两片表面可能有不同法线，单一切平面并不总清楚。
+
+# E. 我的 Idea 池
+0:{"P":null,"b":"OWdaqeqiLQ8iAvNAC0Bu9","p":"","c":["","notes","analysis-record",""],"i":false,"f":[[["",{"children":["notes",{"children":["analysis-record",{"children":["__PAGE__",{}]}]}]},"$undefined","$undefined",true],["",["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/css/61d5ea2d1ac07f91.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}]],["$","html",null,{"lang":"en","className":"scroll-smooth","suppressHydrationWarning":true,"children":[["$","head",null,{"children":[["$","link",null,{"rel":"icon","href":"/favicon.svg","type":"image/svg+xml"}],["$","script",null,{"dangerouslySetInnerHTML":{"__html":"\n              try {\n                const theme = localStorage.getItem('theme-storage');\n                const parsed = theme ? JSON.parse(theme) : null;\n                const setting = parsed?.state?.theme;\n                const effective = setting === 'dark' ? 'dark' : 'light';\n                var root = document.documentElement;\n                root.classList.add(effective);\n                root.setAttribute('data-theme', effective);\n              } catch (e) {\n                var root = document.documentElement;\n                root.classList.add('light');\n                root.setAttribute('data-theme', 'light');\n              }\n            "}}],["$","script",null,{"dangerouslySetInnerHTML":{"__html":"$2"}}]]}],["$","body",null,{"className":"font-sans antialiased","children":["$","$L3",null,{"children":["$","$L4",null,{"config":{"enabled":true,"locales":["en","zh"],"defaultLocale":"en","mode":"fixed","fixedLocale":"en","persist":true,"switcher":true,"labels":{"en":"English","zh":"中文"}},"children":[["$","$L5",null,{"items":[{"title":"About","type":"page","target":"about","href":"/"},{"title":"Projects","type":"page","target":"projects","href":"/projects"},{"title":"Now","type":"page","target":"now","href":"/now"}],"siteTitle":"Jaden","enableOnePageMode":true,"i18n":"$0:f:0:1:1:props:children:1:props:children:1:props:children:props:children:props:config","itemsByLocale":{"en":[{"title":"About","type":"page","target":"about","href":"/"},{"title":"Projects","type":"page","target":"projects","href":"/projects"},{"title":"Now","type":"page","target":"now","href":"/now"}],"zh":[{"title":"关于","type":"page","target":"about","href":"/"},{"title":"项目","type":"page","target":"projects","href":"/projects"},{"title":"近况","type":"page","target":"now","href":"/now"}]},"siteTitleByLocale":{"en":"Jaden","zh":"Jaden"}}],["$","main",null,{"className":"min-h-screen pt-16 lg:pt-20","children":["$","$L6",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L7",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":404}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],[]],"forbidden":"$undefined","unauthorized":"$undefined"}]}],["$","$L8",null,{"lastUpdated":"October 13, 2026","lastUpdatedByLocale":{"en":"October 13, 2026","zh":"2026年10月13日"},"defaultLocale":"en"}]]}]}]}]]}]]}],{"children":["notes",["$","$1","c",{"children":[null,["$","$L6",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L7",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}],{"children":["analysis-record",["$","$1","c",{"children":[null,["$","$L6",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L7",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}],{"children":["__PAGE__",["$","$1","c",{"children":[["$","$L9",null,{"content":"$a","papers":[{"number":"01","title":"LightGaussian: Unbounded 3D Gaussian Compression with 15x Reduction and 200+ FPS"},{"number":"02","title":"FastGS: Training 3D Gaussian Splatting in 100 Seconds"},{"number":"03","title":"Speeding Up the Learning of 3D Gaussians with Much Shorter Gaussian Lists"},{"number":"04","title":"Prune Wisely, Reconstruct Sharply"},{"number":"05","title":"Improving Densification in 3D Gaussian Splatting for High-Fidelity Rendering"},{"number":"06","title":"Mobile-GS: Real-time Gaussian Splatting for Mobile Devices"},{"number":"07","title":"3D Gaussian Splatting at Arbitrary Resolutions with Compact Proxy Anchors"},{"number":"08","title":"Neural Gabor Splatting"},{"number":"09","title":"Z-Order Transformer for Feed-Forward Gaussian Splatting"},{"number":"10","title":"Expressive Whole-Body 3D Gaussian Avatar / ExAvatar"},{"number":"11","title":"Structure-Aware Fine-Grained Gaussian Splatting / SFGS"},{"number":"12","title":"HumanSplatHMR: Closing the Loop Between Human Mesh Recovery and Gaussian Splatting Avatar"},{"number":"13","title":"DNGaussian: Optimizing Sparse-View 3D Gaussian Radiance Fields with Global-Local Depth Normalization"},{"number":"14","title":"Perceptual-GS: Scene-adaptive Perceptual Densification for Gaussian Splatting"},{"number":"15","title":"PSCD-GS: Role-Aware Perception-Structure Collaborative Densification for 3D Gaussian Splatting"},{"number":"16","title":"HyperGaussians: High-Dimensional Gaussian Splatting for High-Fidelity Animatable Face Avatars"},{"number":"17","title":"N-Dimensional Gaussians for Fitting of High Dimensional Functions"},{"number":"18","title":"Deformable 3D Gaussians for High-Fidelity Monocular Dynamic Scene Reconstruction"},{"number":"19","title":"4D Gaussian Splatting for Real-Time Dynamic Scene Rendering"},{"number":"20","title":"Improving Gaussian Splatting with Localized Points Management"},{"number":"21","title":"Steepest Descent Density Control for Compact 3D Gaussian Splatting (SteepGS)"},{"number":"22","title":"Faster 3D Gaussian Splatting Convergence via Structure-Aware Densification (SAD-GS)"},{"number":"23","title":"GS²: Graph-based Spatial Distribution Optimization for Compact 3D Gaussian Splatting"},{"number":"24","title":"Plug-and-Play PDE Optimization for 3D Gaussian Splatting (PDEO)"},{"number":"25","title":"EDGS: Eliminating Densification for Efficient Convergence of 3DGS"},{"number":"26","title":"VAD-GS: Visibility-Aware Densification for 3D Gaussian Splatting in Dynamic Urban Scenes"},{"number":"27","title":"RAP: Fast Feedforward Rendering-Free Attribute-Guided Primitive Importance Score Prediction"},{"number":"28","title":"ResGS: Residual Densification of 3D Gaussian for Efficient Detail Recovery"},{"number":"29","title":"Revising Densification in Gaussian Splatting"},{"number":"30","title":"Pixel-GS: Density Control with Pixel-aware Gradient for 3D Gaussian Splatting"},{"number":"31","title":"Efficient Confidence-Aware Densification for 3DGS"},{"number":"32","title":"SeG-Gaussian: Segmentation-Guided 3D Gaussian Optimization for Novel View Synthesis"},{"number":"33","title":"GeoTexDensifier: Geometry-Texture-Aware Densification for High-Quality Photorealistic 3D Gaussian Splatting"},{"number":"34","title":"IndoorGS: Geometric Cues Guided Gaussian Splatting for Indoor Scene Reconstruction"}]}],["$","$Lb",null,{"children":"$Lc"}],null,["$","$Ld",null,{"children":["$Le","$Lf",["$","$L10",null,{"promise":"$@11"}]]}]]}],{},null,false]},null,false]},null,false]},null,false],["$","$1","h",{"children":[null,["$","$1","yFlyhOOE5n1_s84ptPq2S",{"children":[["$","$L12",null,{"children":"$L13"}],null]}],null]}],false]],"m":"$undefined","G":["$14","$undefined"],"s":false,"S":true}
 15:"$Sreact.suspense"
 16:I[4911,[],"AsyncMetadata"]
 c:["$","$15",null,{"fallback":null,"children":["$","$L16",null,{"promise":"$@17"}]}]
